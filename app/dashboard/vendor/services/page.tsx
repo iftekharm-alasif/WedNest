@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { getServices, deleteService } from "@/lib/actions/services"
+import {
+  getServices,
+  deleteService,
+  updateServiceActive,
+} from "@/lib/actions/services"
 import { toast } from "sonner"
 import {
   Plus,
@@ -33,6 +37,7 @@ type Service = {
   location: string
   images: string[]
   status: string
+  isActive: boolean
   createdAt: string
 }
 
@@ -98,6 +103,33 @@ export default function ServicesPage() {
         return "bg-amber-50 text-amber-700 border-amber-100"
       default:
         return "bg-gray-100 text-gray-600 border-gray-200"
+    }
+  }
+  const handleActiveChange = async (item: Service) => {
+    const newActiveStatus = !item.isActive
+
+    try {
+      const result = await updateServiceActive(item._id, newActiveStatus)
+
+      if (result.success) {
+        setServices((prev) =>
+          prev.map((service) =>
+            service._id === item._id
+              ? { ...service, isActive: newActiveStatus }
+              : service
+          )
+        )
+
+        toast.success(
+          newActiveStatus
+            ? "Service activated successfully"
+            : "Service deactivated successfully"
+        )
+      } else {
+        toast.error(result.message || "Failed to update service")
+      }
+    } catch {
+      toast.error("Something went wrong")
     }
   }
 
@@ -200,16 +232,39 @@ export default function ServicesPage() {
 
               {/* Content */}
               <div className="space-y-4 p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-medium text-gray-400">
-                    SERVICE
-                  </span>
-
+                <div className="flex items-center justify-between">
                   <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(item.status)}`}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${
+                      item.status === "approved"
+                        ? "border-green-200 bg-green-50 text-green-700"
+                        : item.status === "pending"
+                          ? "border-yellow-200 bg-yellow-50 text-yellow-700"
+                          : "border-red-200 bg-red-50 text-red-700"
+                    }`}
                   >
                     {item.status}
                   </span>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-gray-500">
+                      {item.isActive ? "Active" : "Inactive"}
+                    </span>
+
+                    <button
+                      type="button"
+                      disabled={item.status !== "approved"}
+                      onClick={() => handleActiveChange(item)}
+                      className={`relative h-6 w-11 rounded-full transition ${
+                        item.isActive ? "bg-green-500" : "bg-gray-300"
+                      } disabled:cursor-not-allowed disabled:opacity-40`}
+                    >
+                      <span
+                        className={`absolute top-1 size-4 rounded-full bg-white shadow transition-all ${
+                          item.isActive ? "left-6" : "left-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
 
                 <div>
