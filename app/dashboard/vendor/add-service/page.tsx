@@ -12,7 +12,11 @@ import {
   LoaderCircle,
 } from "lucide-react"
 import { toast } from "sonner"
-import { createServices, uploadServiceImages } from "@/lib/actions/services"
+import {
+  createServices,
+  uploadServiceImages,
+  uploadImageFromUrl,
+} from "@/lib/actions/services"
 
 const categories = [
   "Photography",
@@ -38,6 +42,7 @@ const AddServicePage = () => {
   const [images, setImages] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
+  const [imageUrl, setImageUrl] = useState("")
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -82,6 +87,35 @@ const AddServicePage = () => {
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index))
   }
+  const handleUrlUpload = async () => {
+    if (!imageUrl.trim()) {
+      toast.error("Please enter an image URL")
+      return
+    }
+
+    if (images.length >= 5) {
+      toast.error("You can upload maximum 5 images")
+      return
+    }
+
+    try {
+      setUploadingImages(true)
+
+      const result = await uploadImageFromUrl(imageUrl)
+
+      if (result.success) {
+        setImages((prev) => [...prev, result.image])
+        setImageUrl("")
+        toast.success("Image uploaded to ImgBB")
+      } else {
+        toast.error(result.message || "Image upload failed")
+      }
+    } catch {
+      toast.error("Failed to upload image")
+    } finally {
+      setUploadingImages(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -110,7 +144,7 @@ const AddServicePage = () => {
 
       if (result.success) {
         toast.success("Service submitted successfully!")
-
+        setImageUrl("")
         setServiceName("")
         setCategory("")
         setDescription("")
@@ -296,7 +330,34 @@ const AddServicePage = () => {
                 />
               </label>
             </div>
+            <div className="mt-5">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Or Paste Image URL
+              </label>
 
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="h-12 flex-1 rounded-xl border border-[#E8D5D0] px-4 text-sm outline-none focus:border-[#A65D55]"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleUrlUpload}
+                  disabled={uploadingImages || images.length >= 5}
+                  className="h-12 rounded-xl bg-[#A65D55] px-6 text-sm font-semibold text-white transition hover:bg-[#884840] disabled:opacity-60"
+                >
+                  {uploadingImages ? "Uploading..." : "Add Image"}
+                </button>
+              </div>
+
+              <p className="mt-2 text-xs text-gray-500">
+                Paste a public image URL. It will be uploaded to ImgBB.
+              </p>
+            </div>
             {images.length > 0 && (
               <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
                 {images.map((image, index) => (
