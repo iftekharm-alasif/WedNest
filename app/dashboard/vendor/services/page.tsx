@@ -1,8 +1,9 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
+import { authClient } from "@/lib/auth-client"
 import {
   getServices,
   deleteService,
@@ -15,7 +16,6 @@ import {
   Pencil,
   Trash2,
   BriefcaseBusiness,
-  ImageIcon,
 } from "lucide-react"
 
 import {
@@ -31,6 +31,7 @@ import {
 
 type Service = {
   _id: string
+  vendorId: string
   serviceName: string
   category: string
   price: number
@@ -42,18 +43,34 @@ type Service = {
 }
 
 export default function ServicesPage() {
+  const { data: session, isPending } = authClient.useSession()
+
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+useEffect(() => {
+  if (isPending) return
+
   const loadServices = async () => {
+    if (!session?.user?.id) {
+      setServices([])
+      setLoading(false)
+      return
+    }
+
     try {
       const result = await getServices()
 
-      const sortedServices = [...result].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const myServices = result.filter(
+        (item: Service) => item.vendorId === session.user.id
+      )
+
+      const sortedServices = myServices.sort(
+        (a: Service, b: Service) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
       )
 
       setServices(sortedServices)
@@ -64,9 +81,8 @@ export default function ServicesPage() {
     }
   }
 
-  useEffect(() => {
-    loadServices()
-  }, [])
+  loadServices()
+}, [session?.user?.id, isPending])
 
   const handleDelete = async () => {
     if (!selectedService) return
@@ -93,18 +109,6 @@ export default function ServicesPage() {
     }
   }
 
-  const getStatusStyle = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "approved":
-        return "bg-green-50 text-green-700 border-green-100"
-      case "rejected":
-        return "bg-red-50 text-red-600 border-red-100"
-      case "pending":
-        return "bg-amber-50 text-amber-700 border-amber-100"
-      default:
-        return "bg-gray-100 text-gray-600 border-gray-200"
-    }
-  }
   const handleActiveChange = async (item: Service) => {
     const newActiveStatus = !item.isActive
 
@@ -135,7 +139,6 @@ export default function ServicesPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <p className="mb-2 text-sm font-medium text-[#A65D55]">
@@ -158,7 +161,6 @@ export default function ServicesPage() {
         </Link>
       </div>
 
-      {/* Service Count */}
       {!loading && (
         <div className="flex items-center gap-3 rounded-xl border border-[#F0E5E1] bg-white p-4">
           <div className="flex size-11 items-center justify-center rounded-xl bg-[#F8EFED] text-[#A65D55]">
@@ -166,13 +168,14 @@ export default function ServicesPage() {
           </div>
 
           <div>
-            <p className="text-xl font-bold text-gray-800">{services.length}</p>
+            <p className="text-xl font-bold text-gray-800">
+              {services.length}
+            </p>
             <p className="text-xs text-gray-500">Total Services</p>
           </div>
         </div>
       )}
 
-      {/* Services */}
       {loading ? (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3].map((item) => (
@@ -210,7 +213,6 @@ export default function ServicesPage() {
               key={item._id}
               className="group overflow-hidden rounded-2xl border border-[#F0E5E1] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#D6A69D] hover:shadow-xl"
             >
-              {/* Image */}
               <div className="relative h-52 overflow-hidden bg-[#F8F1EE]">
                 {item.images?.[0] ? (
                   <img
@@ -221,7 +223,7 @@ export default function ServicesPage() {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-[#C5A49D]">
-                    <ImageIcon size={45} />
+                    <BriefcaseBusiness size={45} />
                   </div>
                 )}
 
@@ -230,7 +232,6 @@ export default function ServicesPage() {
                 </span>
               </div>
 
-              {/* Content */}
               <div className="space-y-4 p-5">
                 <div className="flex items-center justify-between">
                   <span
@@ -310,7 +311,6 @@ export default function ServicesPage() {
         </div>
       )}
 
-      {/* Delete Confirmation */}
       <AlertDialog
         open={!!selectedService}
         onOpenChange={(open) => {
@@ -330,7 +330,9 @@ export default function ServicesPage() {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>
+              Cancel
+            </AlertDialogCancel>
 
             <AlertDialogAction
               onClick={(e) => {
