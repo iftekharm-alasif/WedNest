@@ -66,3 +66,13 @@ export const updateServiceActive = async (
 
   return res.json();
 };
+
+export const getBrowseServices = async () => {
+  const res = await fetch(`${BASE_URL}/browse-services`);
+
+  if (!res.ok) {
+    throw new Error("Failed to load services");
+  }
+
+  return res.json();
+};
