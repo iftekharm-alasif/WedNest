@@ -1,9 +1,8 @@
+"use client"
 
-"use client";
-
-import Link from "next/link";
-import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link"
+import { useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
 import {
   HeartHandshake,
   Menu,
@@ -13,64 +12,61 @@ import {
   ChevronDown,
   LayoutDashboard,
   BriefcaseBusiness,
-} from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+} from "lucide-react"
+import { authClient } from "@/lib/auth-client"
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
-  const router = useRouter();
-  const pathname = usePathname();
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession()
 
-  const userRole = session?.user?.role || "customer";
+  const userRole = session?.user?.role || "customer"
 
   const dashboardPath =
     userRole === "admin"
-      ? "/admin-dashboard"
+      ? "/dashboard/admin"
       : userRole === "vendor"
-        ? "/vendor-dashboard"
-        : "/dashboard";
+        ? "/dashboard/vendor"
+        : "/dashboard/customer"
 
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Browse Services", href: "/browse-services" },
-    ...(session?.user
-      ? [{ name: "Dashboard", href: dashboardPath }]
-      : []),
-  ];
+    ...(session?.user ? [{ name: "Dashboard", href: dashboardPath }] : []),
+  ]
 
   const handleLogout = async () => {
     try {
-      await authClient.signOut();
+      await authClient.signOut()
 
-      setShowProfile(false);
-      setIsOpen(false);
+      setShowProfile(false)
+      setIsOpen(false)
 
-      router.push("/");
-      router.refresh();
+      router.push("/")
+      router.refresh()
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Logout error:", error)
     }
-  };
+  }
 
   const isActive = (href) => {
-    if (href === "/") return pathname === "/";
-    return pathname.startsWith(href);
-  };
+    if (href === "/") return pathname === "/"
+    return pathname.startsWith(href)
+  }
 
   const closeMenu = () => {
-    setIsOpen(false);
-    setShowProfile(false);
-  };
+    setIsOpen(false)
+    setShowProfile(false)
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#F0E5E1] bg-white/95 shadow-sm backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-5">
         <div className="flex h-[76px] items-center justify-between">
-
           {/* Logo */}
           <Link
             href="/"
@@ -133,7 +129,7 @@ const Navbar = () => {
                     <p className="max-w-[110px] truncate text-sm font-semibold text-gray-800">
                       {session.user.name}
                     </p>
-                    <p className="text-xs capitalize text-[#A65D55]">
+                    <p className="text-xs text-[#A65D55] capitalize">
                       {userRole}
                     </p>
                   </div>
@@ -153,7 +149,7 @@ const Navbar = () => {
                       onClick={() => setShowProfile(false)}
                     />
 
-                    <div className="absolute right-0 top-14 z-50 w-60 overflow-hidden rounded-xl border border-[#F0E5E1] bg-white p-2 shadow-xl">
+                    <div className="absolute top-14 right-0 z-50 w-60 overflow-hidden rounded-xl border border-[#F0E5E1] bg-white p-2 shadow-xl">
                       <div className="border-b border-[#F0E5E1] px-3 py-3">
                         <p className="truncate text-sm font-semibold text-gray-800">
                           {session.user.name}
@@ -226,7 +222,6 @@ const Navbar = () => {
         {isOpen && (
           <div className="border-t border-[#F0E5E1] bg-white py-5 md:hidden">
             <div className="flex flex-col gap-3">
-
               <nav className="flex flex-col gap-2">
                 {navLinks.map((link) => (
                   <Link
@@ -243,13 +238,9 @@ const Navbar = () => {
                       <BriefcaseBusiness size={18} />
                     )}
 
-                    {link.name === "Dashboard" && (
-                      <LayoutDashboard size={18} />
-                    )}
+                    {link.name === "Dashboard" && <LayoutDashboard size={18} />}
 
-                    {link.name === "Home" && (
-                      <HeartHandshake size={18} />
-                    )}
+                    {link.name === "Home" && <HeartHandshake size={18} />}
 
                     {link.name}
                   </Link>
@@ -281,7 +272,7 @@ const Navbar = () => {
                           <p className="truncate text-xs text-gray-500">
                             {session.user.email}
                           </p>
-                          <p className="text-xs capitalize text-[#A65D55]">
+                          <p className="text-xs text-[#A65D55] capitalize">
                             {userRole}
                           </p>
                         </div>
@@ -329,7 +320,7 @@ const Navbar = () => {
         )}
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

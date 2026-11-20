@@ -4,7 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
-
+import { Toaster } from "@/components/ui/sonner";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'})
 
 const fontMono = Geist_Mono({
@@ -27,6 +27,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <Navbar></Navbar>
+          <Toaster />
           {children}
           </ThemeProvider>
       </body>

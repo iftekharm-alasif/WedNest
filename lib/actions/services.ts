@@ -1,0 +1,53 @@
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+type ServiceData = {
+  serviceName: string;
+  category: string;
+  description: string;
+  price: string | number;
+  location: string;
+  images: string[];
+};
+
+export const createServices = async (data: ServiceData) => {
+  const res = await fetch(`${BASE_URL}/services`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};
+
+// Get Services
+export const getServices = async () => {
+  const res = await fetch(`${BASE_URL}/services`);
+  return res.json();
+};
+
+export const uploadServiceImages = async (files: File[]) => {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const res = await fetch(`${BASE_URL}/upload-images`, {
+    method: "POST",
+    body: formData,
+  });
+
+  return res.json();
+};
+
+// Delete Service
+export const deleteService = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/services/${id}`, {
+    method: "DELETE",
+  });
+
+  return res.json();
+};
