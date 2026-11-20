@@ -1,80 +1,80 @@
+"use client"
 
-"use client";
-
-import { useEffect, useState } from "react";
-import { getBrowseServices } from "@/lib/actions/services";
+import { useEffect, useState } from "react"
+import { getBrowseServices } from "@/lib/actions/services"
 import {
   Search,
   MapPin,
   SlidersHorizontal,
   X,
   BriefcaseBusiness,
-} from "lucide-react";
+} from "lucide-react"
+import Link from "next/link"
 
 type Service = {
-  _id: string;
-  serviceName: string;
-  category: string;
-  description: string;
-  price: number;
-  location: string;
-  images: string[];
-  vendorName?: string;
-};
+  _id: string
+  serviceName: string
+  category: string
+  description: string
+  price: number
+  location: string
+  images: string[]
+  vendorName?: string
+}
 
 export default function BrowseServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All Categories");
-  const [sort, setSort] = useState("default");
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState("All Categories")
+  const [sort, setSort] = useState("default")
 
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const data = await getBrowseServices();
-        setServices(data);
+        const data = await getBrowseServices()
+        setServices(data)
       } catch (error) {
-        console.log(error);
+        console.log(error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadServices();
-  }, []);
+    loadServices()
+  }, [])
 
   const categories = [
     "All Categories",
     ...Array.from(new Set(services.map((item) => item.category))),
-  ];
+  ]
 
   const filteredServices = services
     .filter((item) => {
-      const searchText = search.toLowerCase();
+      const searchText = search.toLowerCase()
 
       const matchesSearch =
         item.serviceName.toLowerCase().includes(searchText) ||
         item.category.toLowerCase().includes(searchText) ||
         item.location.toLowerCase().includes(searchText) ||
-        (item.vendorName || "").toLowerCase().includes(searchText);
+        (item.vendorName || "").toLowerCase().includes(searchText)
 
       const matchesCategory =
-        category === "All Categories" || item.category === category;
+        category === "All Categories" || item.category === category
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesCategory
     })
     .sort((a, b) => {
-      if (sort === "low-to-high") return a.price - b.price;
-      if (sort === "high-to-low") return b.price - a.price;
-      return 0;
-    });
+      if (sort === "low-to-high") return a.price - b.price
+      if (sort === "high-to-low") return b.price - a.price
+      return 0
+    })
 
   const clearFilters = () => {
-    setSearch("");
-    setCategory("All Categories");
-    setSort("default");
-  };
+    setSearch("")
+    setCategory("All Categories")
+    setSort("default")
+  }
 
   if (loading) {
     return (
@@ -86,14 +86,14 @@ export default function BrowseServicesPage() {
           />
         ))}
       </div>
-    );
+    )
   }
 
   return (
     <section className="min-h-screen bg-[#FCFAF9]">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-[#A65D55] to-[#884840] px-6 py-16 text-center text-white sm:py-20">
-        <p className="mb-3 text-sm font-medium uppercase tracking-[3px] text-white/75">
+        <p className="mb-3 text-sm font-medium tracking-[3px] text-white/75 uppercase">
           Make Your Day Special
         </p>
 
@@ -109,80 +109,82 @@ export default function BrowseServicesPage() {
 
       <div className="mx-auto max-w-7xl px-6 py-12">
         {/* Search and Filters */}
-{/* Search */}
-<div className="-mt-20 relative rounded-2xl border border-[#F0E5E1] bg-white p-5 shadow-lg sm:p-6">
-  <div className="relative">
-    <Search
-      size={19}
-      className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
-    />
-    <input
-      type="text"
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-      placeholder="Search services, vendors..."
-      className="h-12 w-full rounded-xl border border-[#EDE3DF] bg-[#FCFAF9] pl-11 pr-4 text-sm outline-none transition focus:border-[#A65D55] focus:ring-2 focus:ring-[#A65D55]/10"
-    />
-  </div>
+        {/* Search */}
+        <div className="relative -mt-20 rounded-2xl border border-[#F0E5E1] bg-white p-5 shadow-lg sm:p-6">
+          <div className="relative">
+            <Search
+              size={19}
+              className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search services, vendors..."
+              className="h-12 w-full rounded-xl border border-[#EDE3DF] bg-[#FCFAF9] pr-4 pl-11 text-sm transition outline-none focus:border-[#A65D55] focus:ring-2 focus:ring-[#A65D55]/10"
+            />
+          </div>
 
-  {/* Filters */}
-  <div className="mt-5 flex flex-col justify-between gap-4 border-t border-[#F0E5E1] pt-5 sm:flex-row sm:items-center">
-    {/* Left Side */}
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-        <SlidersHorizontal size={17} />
-        Filter:
-      </div>
+          {/* Filters */}
+          <div className="mt-5 flex flex-col justify-between gap-4 border-t border-[#F0E5E1] pt-5 sm:flex-row sm:items-center">
+            {/* Left Side */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                <SlidersHorizontal size={17} />
+                Filter:
+              </div>
 
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="h-11 min-w-44 rounded-xl border border-[#EDE3DF] bg-[#FCFAF9] px-4 text-sm text-gray-700 outline-none focus:border-[#A65D55]"
-      >
-        {categories.map((item) => (
-          <option key={item} value={item}>
-            {item}
-          </option>
-        ))}
-      </select>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="h-11 min-w-44 rounded-xl border border-[#EDE3DF] bg-[#FCFAF9] px-4 text-sm text-gray-700 outline-none focus:border-[#A65D55]"
+              >
+                {categories.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
 
-      {(search || category !== "All Categories" || sort !== "default") && (
-        <button
-          onClick={clearFilters}
-          className="flex items-center gap-1 text-sm font-semibold text-[#A65D55] hover:text-[#884840]"
-        >
-          <X size={15} />
-          Clear
-        </button>
-      )}
-    </div>
+              {(search ||
+                category !== "All Categories" ||
+                sort !== "default") && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center gap-1 text-sm font-semibold text-[#A65D55] hover:text-[#884840]"
+                >
+                  <X size={15} />
+                  Clear
+                </button>
+              )}
+            </div>
 
-    {/* Right Side */}
-    <div className="flex items-center gap-3">
-      <span className="whitespace-nowrap text-sm text-gray-500">
-        Sort by:
-      </span>
+            {/* Right Side */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm whitespace-nowrap text-gray-500">
+                Sort by:
+              </span>
 
-      <select
-        value={sort}
-        onChange={(e) => setSort(e.target.value)}
-        className="h-11 min-w-44 rounded-xl border border-[#EDE3DF] bg-[#FCFAF9] px-4 text-sm text-gray-700 outline-none focus:border-[#A65D55]"
-      >
-        <option value="default">Default</option>
-        <option value="low-to-high">Price: Low to High</option>
-        <option value="high-to-low">Price: High to Low</option>
-      </select>
-    </div>
-  </div>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="h-11 min-w-44 rounded-xl border border-[#EDE3DF] bg-[#FCFAF9] px-4 text-sm text-gray-700 outline-none focus:border-[#A65D55]"
+              >
+                <option value="default">Default</option>
+                <option value="low-to-high">Price: Low to High</option>
+                <option value="high-to-low">Price: High to Low</option>
+              </select>
+            </div>
+          </div>
 
-  <div className="mt-4 text-sm text-gray-500">
-    Showing{" "}
-    <span className="font-semibold text-[#A65D55]">
-      {filteredServices.length}
-    </span>{" "}
-    of {services.length} services
-  </div>
-</div>
+          <div className="mt-4 text-sm text-gray-500">
+            Showing{" "}
+            <span className="font-semibold text-[#A65D55]">
+              {filteredServices.length}
+            </span>{" "}
+            of {services.length} services
+          </div>
+        </div>
 
         {/* Services */}
         <div className="mt-10">
@@ -254,9 +256,7 @@ export default function BrowseServicesPage() {
                     </div>
 
                     <div className="border-t border-[#F0E5E1] pt-4">
-                      <p className="text-xs text-gray-400">
-                        Provided by
-                      </p>
+                      <p className="text-xs text-gray-400">Provided by</p>
                       <p className="mt-1 font-medium text-gray-700">
                         {item.vendorName || "WedNest Vendor"}
                       </p>
@@ -264,9 +264,7 @@ export default function BrowseServicesPage() {
 
                     <div className="flex items-center justify-between border-t border-[#F0E5E1] pt-4">
                       <div>
-                        <p className="text-xs text-gray-400">
-                          Starting Price
-                        </p>
+                        <p className="text-xs text-gray-400">Starting Price</p>
                         <p className="mt-1 text-xl font-bold text-[#A65D55]">
                           ৳{Number(item.price).toLocaleString("en-BD")}
                         </p>
@@ -277,12 +275,19 @@ export default function BrowseServicesPage() {
                       </span>
                     </div>
                   </div>
+                  <Link
+  href={`/service-details/${item._id}`}
+  className="block w-full rounded-xl bg-[#A65D55] py-3 text-center text-sm font-semibold text-white transition hover:bg-[#884840]"
+>
+  View Details
+</Link>
                 </div>
               ))}
             </div>
           )}
         </div>
+
       </div>
     </section>
-  );
+  )
 }

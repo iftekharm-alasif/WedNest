@@ -88,3 +88,33 @@ export const uploadImageFromUrl = async (imageUrl: string) => {
 
   return res.json();
 };
+
+export const getServiceById = async (id: string) => {
+  const res = await fetch(`${BASE_URL}/services/${id}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to load service details");
+  }
+
+  return res.json();
+};
+
+// Create Booking
+export const createBooking = async (data: {
+  serviceId: string;
+  vendorId: string;
+  customerId: string;
+  eventDate: string;
+  eventLocation: string;
+  message: string;
+}) => {
+  const res = await fetch(`${BASE_URL}/bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+};

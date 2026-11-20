@@ -13,6 +13,16 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   createServices,
   uploadServiceImages,
   uploadImageFromUrl,
@@ -43,6 +53,7 @@ const AddServicePage = () => {
   const [loading, setLoading] = useState(false)
   const [uploadingImages, setUploadingImages] = useState(false)
   const [imageUrl, setImageUrl] = useState("")
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -117,49 +128,55 @@ const AddServicePage = () => {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  setShowConfirmation(true)
+}
 
-    if (images.length === 0) {
-      toast.error("Please upload at least one image")
-      return
-    }
 
-    try {
-      setLoading(true)
-
-      const serviceData = {
-        serviceName,
-        category,
-        description,
-        price,
-        location,
-        images,
-
-        vendorId: session?.user.id,
-        vendorName: session?.user.name,
-        vendorEmail: session?.user.email,
-      }
-      const result = await createServices(serviceData)
-
-      if (result.success) {
-        toast.success("Service submitted successfully!")
-        setImageUrl("")
-        setServiceName("")
-        setCategory("")
-        setDescription("")
-        setPrice("")
-        setLocation("")
-        setImages([])
-      } else {
-        toast.error(result.message || "Failed to submit service")
-      }
-    } catch {
-      toast.error("Something went wrong")
-    } finally {
-      setLoading(false)
-    }
+const confirmSubmit = async () => {
+  if (images.length === 0) {
+    toast.error("Please upload at least one image")
+    setShowConfirmation(false)
+    return
   }
+
+  try {
+    setLoading(true)
+
+    const serviceData = {
+      serviceName,
+      category,
+      description,
+      price,
+      location,
+      images,
+      vendorId: session?.user.id,
+      vendorName: session?.user.name,
+      vendorEmail: session?.user.email,
+    }
+
+    const result = await createServices(serviceData)
+
+    if (result.success) {
+      toast.success("Service submitted successfully!")
+      setImageUrl("")
+      setServiceName("")
+      setCategory("")
+      setDescription("")
+      setPrice("")
+      setLocation("")
+      setImages([])
+    } else {
+      toast.error(result.message || "Failed to submit service")
+    }
+  } catch {
+    toast.error("Something went wrong")
+  } finally {
+    setLoading(false)
+    setShowConfirmation(false)
+  }
+}
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] px-4 py-8 md:px-8">
@@ -406,6 +423,37 @@ const AddServicePage = () => {
             </button>
           </div>
         </form>
+        <AlertDialog
+  open={showConfirmation}
+  onOpenChange={setShowConfirmation}
+>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Submit Your Service?</AlertDialogTitle>
+      <AlertDialogDescription>
+        Are you sure you want to submit this service? It will be sent
+        to the admin for approval before appearing in Browse Services.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+<AlertDialogFooter>
+  <AlertDialogCancel disabled={loading}>
+    Cancel
+  </AlertDialogCancel>
+
+  <AlertDialogAction
+    onClick={(e) => {
+      e.preventDefault()
+      confirmSubmit()
+    }}
+    disabled={loading}
+    className="bg-[#A65D55] hover:bg-[#884840]"
+  >
+    {loading ? "Submitting..." : "Yes, Submit"}
+  </AlertDialogAction>
+</AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
       </div>
     </div>
   )
