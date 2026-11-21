@@ -32,7 +32,12 @@ const Navbar = () => {
       : userRole === "vendor"
         ? "/dashboard/vendor"
         : "/dashboard/customer"
-
+  const profilePath =
+    userRole === "admin"
+      ? "/dashboard/admin/profile"
+      : userRole === "vendor"
+        ? "/dashboard/vendor/profile"
+        : "/dashboard/customer/profile"
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Browse Services", href: "/browse-services" },
@@ -160,7 +165,7 @@ const Navbar = () => {
                       </div>
 
                       <Link
-                        href="/profile"
+                        href={profilePath}
                         onClick={() => setShowProfile(false)}
                         className="mt-2 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-600 transition hover:bg-[#FDF3F0] hover:text-[#A65D55]"
                       >
@@ -277,9 +282,8 @@ const Navbar = () => {
                           </p>
                         </div>
                       </div>
-
                       <Link
-                        href="/profile"
+                        href={profilePath}
                         onClick={closeMenu}
                         className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-gray-600 transition hover:bg-[#FDF3F0] hover:text-[#A65D55]"
                       >

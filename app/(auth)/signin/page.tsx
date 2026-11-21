@@ -63,15 +63,15 @@ const handleSignIn = async (e) => {
       return;
     }
 
-    // Check selected role with actual database role
-    if (actualRole !== role) {
-      await authClient.signOut();
+// Admin can sign in using either Customer or Vendor option
+if (actualRole !== "admin" && actualRole !== role) {
+  await authClient.signOut();
 
-      setError(
-        `This account is registered as ${actualRole}. Please select ${actualRole} to sign in.`
-      );
-      return;
-    }
+  setError(
+    `This account is registered as ${actualRole}. Please select ${actualRole} to sign in.`
+  );
+  return;
+}
 
     router.replace("/dashboard");
     router.refresh();
