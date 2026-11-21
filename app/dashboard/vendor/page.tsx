@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { MongoClient, ObjectId } from "mongodb";
 import {
   BriefcaseBusiness,
   CheckCircle2,
@@ -12,7 +13,7 @@ import {
   UserRound,
   Sparkles,
 } from "lucide-react";
-
+import { getVendorSubscription } from "@/lib/actions/subscription";
 import { requireDashboardRole } from "@/lib/dashboard-auth";
 import { getServices } from "@/lib/actions/services";
 
@@ -29,12 +30,7 @@ type Service = {
 export default async function VendorDashboard() {
   const session = await requireDashboardRole("vendor");
 
-  const user = session.user as typeof session.user & {
-    subscriptionPlan?: string;
-  };
-
-  const currentPlan = user.subscriptionPlan || "free";
-
+const currentPlan = await getVendorSubscription(session.user.id);
   const allServices = await getServices();
 
   const services: Service[] = Array.isArray(allServices)
@@ -209,7 +205,7 @@ export default async function VendorDashboard() {
                 href="/dashboard/vendor/subscription"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#A65D55] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8f4d46]"
               >
-                Upgrade to Premium — $30/month
+                Upgrade to Premium — $30/year
                 <ArrowUpRight size={17} />
               </Link>
             )}

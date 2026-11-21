@@ -1,32 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { toast } from "sonner"
 import { Check, Crown, Sparkles, LoaderCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { authClient } from "@/lib/auth-client"
 
 const SubscriptioPage = () => {
   const { data: session, isPending } = authClient.useSession()
-  const [loading, setLoading] = useState(false)
 
   const user = session?.user as
     (typeof session.user & { subscriptionPlan?: string }) | undefined
 
   const plan = user?.subscriptionPlan || "free"
 
-  const handleUpgrade = async () => {
-    try {
-      setLoading(true)
 
-      // Stripe Checkout integration will be added here.
-      toast.info("Premium payment is not available yet.")
-    } catch {
-      toast.error("Something went wrong")
-    } finally {
-      setLoading(false)
-    }
-  }
+
 
   if (isPending) {
     return (
@@ -139,21 +127,13 @@ const SubscriptioPage = () => {
             </div>
           ) : (
 
-            <Link  href="/dashboard/vendor/subscription/payment">
-
-                            <button
-              onClick={handleUpgrade}
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#A65D55] py-3.5 text-sm font-semibold text-white transition hover:bg-[#884840] disabled:opacity-60"
-            >
-              {loading ? (
-                <LoaderCircle size={18} className="animate-spin" />
-              ) : (
-                <Crown size={18} />
-              )}
-              {loading ? "Please wait..." : "Upgrade to Premium"}
-            </button>
-            </Link>
+<Link
+  href="/dashboard/vendor/subscription/payment"
+  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#A65D55] py-3.5 text-sm font-semibold text-white transition hover:bg-[#884840]"
+>
+  <Crown size={18} />
+  Upgrade to Premium
+</Link>
 
           )}
         </div>

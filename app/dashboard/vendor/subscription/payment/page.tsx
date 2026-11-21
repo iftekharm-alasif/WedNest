@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,56 +10,49 @@ import {
   CreditCard,
   Crown,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
-
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 export default function SubscriptionPaymentPage() {
   const { data: session } = authClient.useSession();
   const [loading, setLoading] = useState(false);
 
-  const handlePayment = async () => {
-    if (!session?.user?.id) {
-      toast.error("Please sign in first");
-      return;
-    }
+const handlePayment = async () => {
+  try {
+    setLoading(true);
 
-    try {
-      setLoading(true);
+const response = await fetch("/api/checkout_sessions", {
+  method: "POST",
+});
 
-      const response = await fetch(
-        `${BASE_URL}/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            vendorId: session.user.id,
-            email: session.user.email,
-          }),
-        }
-      );
+const text = await response.text();
 
-      const result = await response.json();
+let result;
 
-      if (!response.ok || !result.url) {
-        toast.error(result.message || "Unable to start payment");
-        return;
-      }
+try {
+  result = JSON.parse(text);
+} catch {
+  console.error("API returned HTML instead of JSON:", text);
+  toast.error("Checkout API route failed. Check the console.");
+  return;
+}
 
-      window.location.href = result.url;
-    } catch (error) {
-      console.error("Payment Error:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+if (!response.ok || !result.url) {
+  toast.error(result.message || "Payment failed");
+  return;
+}
+
+window.location.href = result.url;
+
+    window.location.href = result.url;
+  } catch (error) {
+    console.error("Payment Error:", error);
+    toast.error("Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
