@@ -138,7 +138,10 @@ const SubscriptioPage = () => {
               You are a Premium Vendor
             </div>
           ) : (
-            <button
+
+            <Link  href="/dashboard/vendor/subscription/payment">
+
+                            <button
               onClick={handleUpgrade}
               disabled={loading}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#A65D55] py-3.5 text-sm font-semibold text-white transition hover:bg-[#884840] disabled:opacity-60"
@@ -150,6 +153,8 @@ const SubscriptioPage = () => {
               )}
               {loading ? "Please wait..." : "Upgrade to Premium"}
             </button>
+            </Link>
+
           )}
         </div>
       </div>
