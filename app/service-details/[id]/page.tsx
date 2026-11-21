@@ -92,6 +92,10 @@ export default function ServiceDetailsPage() {
       toast.error("Please sign in to book this service")
       return
     }
+    if (session.user.role !== "customer") {
+      toast.error("Only customers can book services")
+      return
+    }
 
     if (session.user.id === service?.vendorId) {
       toast.error("You cannot book your own service")
@@ -165,6 +169,7 @@ export default function ServiceDetailsPage() {
   }
 
   const isOwnService = session?.user?.id === service.vendorId
+  const isCustomer = session?.user?.role === "customer"
 
   return (
     <section className="min-h-screen bg-[#FCFAF9] px-6 py-10">
@@ -292,6 +297,11 @@ export default function ServiceDetailsPage() {
               ) : isOwnService ? (
                 <p className="mt-5 rounded-xl bg-[#F8EFED] p-4 text-sm text-gray-600">
                   You cannot book your own service.
+                </p>
+              ) : session.user.role !== "customer" ? (
+                <p className="mt-5 rounded-xl bg-[#F8EFED] p-4 text-sm text-gray-600">
+                  Only customers can book services. Vendors cannot book
+                  services.
                 </p>
               ) : bookingCheckLoading ? (
                 <p className="mt-5 text-sm text-gray-500">

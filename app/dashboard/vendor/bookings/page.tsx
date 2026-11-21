@@ -103,7 +103,13 @@ export default function VendorBookingsPage() {
       </div>
     )
   }
-
+if (session?.user?.role !== "vendor") {
+  return (
+    <div className="py-20 text-center text-gray-500">
+      Only vendors can access this page.
+    </div>
+  )
+}
   if (!session) {
     return (
       <div className="py-20 text-center text-gray-500">
