@@ -8,7 +8,9 @@ export const runtime = "nodejs";
 
 const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db("wednestdb");
+
 const users = db.collection("user");
+const transactions = db.collection("transactions");
 
 function getSubscriptionExpiry(subscription: Stripe.Subscription) {
   const timestamps = subscription.items.data
@@ -40,8 +42,10 @@ export async function POST(request: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+    console.log("WEBHOOK RECEIVED:", event.type);
   } catch (error) {
     console.error("Stripe signature error:", error);
+
     return NextResponse.json(
       { message: "Invalid webhook signature" },
       { status: 400 }
@@ -49,8 +53,11 @@ export async function POST(request: Request) {
   }
 
   try {
+    await client.connect();
+
     let subscription: Stripe.Subscription;
     let vendorId: string | undefined;
+    let checkoutSession: Stripe.Checkout.Session | null = null;
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -58,6 +65,8 @@ export async function POST(request: Request) {
       if (session.mode !== "subscription" || !session.subscription) {
         return NextResponse.json({ received: true });
       }
+
+      checkoutSession = session;
 
       const subscriptionId =
         typeof session.subscription === "string"
@@ -86,17 +95,85 @@ export async function POST(request: Request) {
 
     if (!vendorId || !ObjectId.isValid(vendorId)) {
       console.error("Invalid Vendor ID:", vendorId);
-      return NextResponse.json({ received: true });
+
+      return NextResponse.json(
+        { message: "Invalid vendor ID" },
+        { status: 400 }
+      );
+    }
+
+    const vendorObjectId = new ObjectId(vendorId);
+
+    const vendor = await users.findOne(
+      {
+        _id: vendorObjectId,
+        role: "vendor",
+      },
+      {
+        projection: {
+          name: 1,
+          email: 1,
+        },
+      }
+    );
+
+    if (!vendor) {
+      console.error("Vendor not found:", vendorId);
+
+      return NextResponse.json(
+        { message: "Vendor not found" },
+        { status: 500 }
+      );
     }
 
     const expiryDate = getSubscriptionExpiry(subscription);
 
     if (!expiryDate) {
       console.error("Subscription expiry not found:", subscription.id);
+
       return NextResponse.json(
         { message: "Subscription expiry date not found" },
         { status: 500 }
       );
+    }
+
+    // Save transaction for completed checkout.
+    if (checkoutSession) {
+      const session = checkoutSession;
+
+      const transactionStatus =
+        session.payment_status === "paid" ||
+        session.payment_status === "no_payment_required"
+          ? "completed"
+          : "pending";
+
+      await transactions.updateOne(
+        {
+          stripeSessionId: session.id,
+        },
+        {
+          $set: {
+            vendorId: vendorObjectId,
+            vendorName: vendor.name || "Unknown Vendor",
+            vendorEmail: vendor.email || "",
+            plan: session.metadata?.plan || "premium",
+            amount: (session.amount_total || 0) / 100,
+            amountInMinor: session.amount_total || 0,
+            currency: (session.currency || "usd").toUpperCase(),
+            status: transactionStatus,
+            stripeSessionId: session.id,
+            stripeSubscriptionId: subscription.id,
+          },
+          $setOnInsert: {
+            createdAt: new Date(session.created * 1000),
+          },
+        },
+        {
+          upsert: true,
+        }
+      );
+
+      console.log("Transaction saved:", session.id);
     }
 
     const isActive =
@@ -105,7 +182,7 @@ export async function POST(request: Request) {
 
     const result = await users.updateOne(
       {
-        _id: new ObjectId(vendorId),
+        _id: vendorObjectId,
         role: "vendor",
       },
       {
@@ -120,7 +197,6 @@ export async function POST(request: Request) {
     console.log("Stripe Event:", event.type);
     console.log("Subscription ID:", subscription.id);
     console.log("Subscription Status:", subscription.status);
-    console.log("Calculated Expiry:", expiryDate);
     console.log("MongoDB Update Result:", result);
 
     return NextResponse.json({ received: true });

@@ -2,8 +2,12 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { MongoClient } from "mongodb";
 
 export type DashboardRole = "admin" | "vendor" | "customer";
+
+const client = new MongoClient(process.env.MONGODB_URI as string);
+const db = client.db("wednestdb");
 
 export async function requireDashboardUser() {
   const session = await auth.api.getSession({
@@ -14,16 +18,18 @@ export async function requireDashboardUser() {
     redirect("/signin");
   }
 
-  const role = (session.user as { role?: string }).role;
+  const user = await db.collection("user").findOne(
+    { email: session.user.email },
+    { projection: { role: 1 } }
+  );
 
-  if (!role || !["admin", "vendor", "customer"].includes(role)) {
+  const role = user?.role as DashboardRole;
+
+  if (!["admin", "vendor", "customer"].includes(role)) {
     redirect("/signin");
   }
 
-  return {
-    session,
-    role: role as DashboardRole,
-  };
+  return { session, role };
 }
 
 export async function requireDashboardRole(

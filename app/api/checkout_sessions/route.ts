@@ -73,21 +73,28 @@ export async function POST() {
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
+
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
+
       customer_email: user.email,
+
       metadata: {
         vendorId: user.id,
+        plan: "premium",
       },
+
       subscription_data: {
         metadata: {
           vendorId: user.id,
+          plan: "premium",
         },
       },
+
       success_url: `${appUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/dashboard/vendor/subscription`,
     });
@@ -103,8 +110,6 @@ export async function POST() {
       { status: 500 }
     );
   } finally {
-    if (client.topology?.isConnected()) {
-      await client.close();
-    }
+    await client.close();
   }
 }

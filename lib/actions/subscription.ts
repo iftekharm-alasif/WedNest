@@ -1,24 +1,15 @@
 
 import "server-only";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 
 export async function getVendorSubscription(userId: string) {
   if (!ObjectId.isValid(userId)) {
     return "free";
   }
 
-  const uri = process.env.MONGODB_URI;
-
-  if (!uri) {
-    console.error("MONGODB_URI is missing");
-    return "free";
-  }
-
-  const client = new MongoClient(uri);
-
   try {
-    await client.connect();
-
+    const client = await clientPromise;
     const db = client.db("wednestdb");
 
     const vendor = await db.collection("user").findOne(
@@ -36,8 +27,6 @@ export async function getVendorSubscription(userId: string) {
     return vendor?.subscriptionPlan || "free";
   } catch (error) {
     console.error("Subscription fetch error:", error);
-    return "free";
-  } finally {
-    await client.close();
+    throw error;
   }
 }

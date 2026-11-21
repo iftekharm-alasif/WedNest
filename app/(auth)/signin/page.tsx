@@ -23,44 +23,39 @@ const SignInPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSignIn = async (e) => {
-    e.preventDefault();
 
-    const form = e.target;
 
-    try {
-      setLoading(true);
-      setError("");
 
-      const { data, error } = await authClient.signIn.email({
-        email: form.email.value.trim(),
-        password: form.password.value,
-      });
 
-      if (error) {
-        setError(error.message);
-        return;
-      }
+const handleSignIn = async (e) => {
+  e.preventDefault();
 
-      const userRole = data.user.role;
+  const form = e.target;
 
-      if (userRole !== role) {
-        await authClient.signOut();
-        setError(`This account is not registered as a ${role}.`);
-        return;
-      }
+  try {
+    setLoading(true);
+    setError("");
 
-      console.log("Login successful:", data);
+    const { data, error } = await authClient.signIn.email({
+      email: form.email.value.trim(),
+      password: form.password.value,
+    });
 
-      router.push("/dashboard");
-      router.refresh();
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      setError(error.message);
+      return;
     }
-  };
+
+    router.replace("/dashboard");
+    router.refresh();
+
+  } catch (err) {
+    console.error("Login error:", err);
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#FAF7F5] px-4 py-12">
