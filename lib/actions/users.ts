@@ -9,38 +9,28 @@ import { auth } from "@/lib/auth";
 const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db("wednestdb");
 const users = db.collection("user");
+const sessions = db.collection("session");
+const accounts = db.collection("account");
 
 type UserRole = "admin" | "vendor" | "customer";
-
 
 async function checkAdmin() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session) {
-    throw new Error("No active session");
-  }
+  if (!session) throw new Error("No active session");
 
-  const currentUser = await users.findOne(
-    { email: session.user.email },
-    { projection: { email: 1, role: 1 } }
-  );
+  const currentUser = await users.findOne({
+    email: session.user.email,
+  });
 
-  console.log("Logged-in email:", session.user.email);
-  console.log("Database user:", currentUser);
-
-  if (!currentUser) {
-    throw new Error(`User not found in database: ${session.user.email}`);
-  }
-
-  if (currentUser.role !== "admin") {
-    throw new Error(`Current database role is: ${currentUser.role}`);
+  if (!currentUser || currentUser.role !== "admin") {
+    throw new Error("Admin access required");
   }
 
   return session;
 }
-
 
 export async function getAdminUsers() {
   try {
@@ -58,6 +48,8 @@ export async function getAdminUsers() {
             businessName: 1,
             subscriptionPlan: 1,
             createdAt: 1,
+            isBanned: 1,
+            banReason: 1,
           },
         }
       )
@@ -77,17 +69,18 @@ export async function getAdminUsers() {
         createdAt: user.createdAt
           ? new Date(user.createdAt).toISOString()
           : null,
+        isBanned: user.isBanned === true,
+        banReason: user.banReason || "",
       })),
     };
-} catch (error) {
-  console.error("Get users error:", error);
-
-  return {
-    success: false,
-    message: error instanceof Error ? error.message : "Failed to load users",
-    users: [],
-  };
-}
+  } catch (error) {
+    console.error("Get users error:", error);
+    return {
+      success: false,
+      message: "Failed to load users",
+      users: [],
+    };
+  }
 }
 
 export async function updateUserRole(
@@ -105,17 +98,16 @@ export async function updateUserRole(
       return { success: false, message: "Invalid role" };
     }
 
-    const targetUser = await users.findOne({
+    const target = await users.findOne({
       _id: new ObjectId(userId),
     });
 
-    if (!targetUser) {
+    if (!target) {
       return { success: false, message: "User not found" };
     }
 
     if (
-      targetUser.email?.toLowerCase() ===
-        session.user.email.toLowerCase() &&
+      target.email?.toLowerCase() === session.user.email.toLowerCase() &&
       newRole !== "admin"
     ) {
       return {
@@ -124,13 +116,12 @@ export async function updateUserRole(
       };
     }
 
-    if (targetUser.role === "admin" && newRole !== "admin") {
-      const adminCount = await users.countDocuments({ role: "admin" });
-
-      if (adminCount <= 1) {
+    if (target.role === "admin" && newRole !== "admin") {
+      const count = await users.countDocuments({ role: "admin" });
+      if (count <= 1) {
         return {
           success: false,
-          message: "At least one admin account must remain",
+          message: "At least one admin must remain",
         };
       }
     }
@@ -140,16 +131,133 @@ export async function updateUserRole(
       { $set: { role: newRole, updatedAt: new Date() } }
     );
 
-    return {
-      success: true,
-      message: "User role updated successfully",
-    };
+    return { success: true, message: "User role updated successfully" };
   } catch (error) {
-    console.error("Update role error:", error);
+    console.error(error);
+    return { success: false, message: "Failed to update user role" };
+  }
+}
 
-    return {
-      success: false,
-      message: "Failed to update user role",
-    };
+export async function banUser(userId: string) {
+  try {
+    const session = await checkAdmin();
+
+    if (!ObjectId.isValid(userId)) {
+      return { success: false, message: "Invalid user ID" };
+    }
+
+    const target = await users.findOne({
+      _id: new ObjectId(userId),
+    });
+
+    if (!target) {
+      return { success: false, message: "User not found" };
+    }
+
+    if (target.email?.toLowerCase() === session.user.email.toLowerCase()) {
+      return { success: false, message: "You cannot ban your own account" };
+    }
+
+    if (target.role === "admin") {
+      const count = await users.countDocuments({ role: "admin" });
+      if (count <= 1) {
+        return {
+          success: false,
+          message: "You cannot ban the last admin",
+        };
+      }
+    }
+
+    await users.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          isBanned: true,
+          banReason: "Banned by administrator",
+          bannedAt: new Date(),
+        },
+      }
+    );
+
+    // Revoke all existing sessions
+    await sessions.deleteMany({ userId: target._id.toString() });
+
+    return { success: true, message: "User banned successfully" };
+  } catch (error) {
+    console.error("Ban user error:", error);
+    return { success: false, message: "Failed to ban user" };
+  }
+}
+
+export async function unbanUser(userId: string) {
+  try {
+    await checkAdmin();
+
+    if (!ObjectId.isValid(userId)) {
+      return { success: false, message: "Invalid user ID" };
+    }
+
+    const result = await users.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: { isBanned: false },
+        $unset: { banReason: "", bannedAt: "" },
+      }
+    );
+
+    if (!result.matchedCount) {
+      return { success: false, message: "User not found" };
+    }
+
+    return { success: true, message: "User unbanned successfully" };
+  } catch (error) {
+    console.error("Unban user error:", error);
+    return { success: false, message: "Failed to unban user" };
+  }
+}
+
+export async function deleteUser(userId: string) {
+  try {
+    const session = await checkAdmin();
+
+    if (!ObjectId.isValid(userId)) {
+      return { success: false, message: "Invalid user ID" };
+    }
+
+    const target = await users.findOne({
+      _id: new ObjectId(userId),
+    });
+
+    if (!target) {
+      return { success: false, message: "User not found" };
+    }
+
+    if (target.email?.toLowerCase() === session.user.email.toLowerCase()) {
+      return { success: false, message: "You cannot delete your own account" };
+    }
+
+    if (target.role === "admin") {
+      const count = await users.countDocuments({ role: "admin" });
+      if (count <= 1) {
+        return {
+          success: false,
+          message: "You cannot delete the last admin",
+        };
+      }
+    }
+
+    const targetId = target._id.toString();
+
+    await Promise.all([
+      sessions.deleteMany({ userId: targetId }),
+      accounts.deleteMany({ userId: targetId }),
+    ]);
+
+    await users.deleteOne({ _id: target._id });
+
+    return { success: true, message: "User deleted successfully" };
+  } catch (error) {
+    console.error("Delete user error:", error);
+    return { success: false, message: "Failed to delete user" };
   }
 }

@@ -1,7 +1,6 @@
+"use client"
 
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react"
 import {
   Users,
   UserRound,
@@ -12,103 +11,132 @@ import {
   Mail,
   CalendarDays,
   LoaderCircle,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 import {
   getAdminUsers,
   updateUserRole,
+  banUser,
+  unbanUser,
+  deleteUser,
 } from "@/lib/actions/users";
 
-type UserRole = "admin" | "vendor" | "customer";
+type UserRole = "admin" | "vendor" | "customer"
 
 type User = {
-  _id: string;
-  name: string;
-  email: string;
-  image: string;
-  role: UserRole;
-  businessName: string;
-  subscriptionPlan: string;
-  createdAt: string | null;
-};
+  _id: string
+  name: string
+  email: string
+  image: string
+  role: UserRole
+  businessName: string
+  subscriptionPlan: string
+  createdAt: string | null
+  isBanned: boolean
+  banReason: string
+}
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [updatingId, setUpdatingId] = useState("");
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [roleFilter, setRoleFilter] = useState("all")
+  const [updatingId, setUpdatingId] = useState("")
 
   const loadUsers = async () => {
-    setLoading(true);
+    setLoading(true)
 
-    const result = await getAdminUsers();
+    const result = await getAdminUsers()
 
     if (result.success) {
-      setUsers(result.users as User[]);
+      setUsers(result.users as User[])
     } else {
-      toast.error(result.message);
+      toast.error(result.message)
     }
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   useEffect(() => {
-    let active = true;
+    let active = true
 
     getAdminUsers().then((result) => {
-      if (!active) return;
+      if (!active) return
 
       if (result.success) {
-        setUsers(result.users as User[]);
+        setUsers(result.users as User[])
       } else {
-        toast.error(result.message);
+        toast.error(result.message)
       }
 
-      setLoading(false);
-    });
+      setLoading(false)
+    })
 
     return () => {
-      active = false;
-    };
-  }, []);
+      active = false
+    }
+  }, [])
+
+  const handleBanToggle = async (user: User) => {
+    const result = user.isBanned
+      ? await unbanUser(user._id)
+      : await banUser(user._id)
+
+    if (result.success) {
+      toast.success(result.message)
+      await loadUsers()
+    } else {
+      toast.error(result.message)
+    }
+  }
+
+  const handleDelete = async (user: User) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete ${user.name}?`
+    )
+
+    if (!confirmed) return
+
+    const result = await deleteUser(user._id)
+
+    if (result.success) {
+      toast.success(result.message)
+      await loadUsers()
+    } else {
+      toast.error(result.message)
+    }
+  }
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const searchMatch =
         user.name.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase());
+        user.email.toLowerCase().includes(search.toLowerCase())
 
-      const roleMatch =
-        roleFilter === "all" || user.role === roleFilter;
+      const roleMatch = roleFilter === "all" || user.role === roleFilter
 
-      return searchMatch && roleMatch;
-    });
-  }, [users, search, roleFilter]);
+      return searchMatch && roleMatch
+    })
+  }, [users, search, roleFilter])
 
-  const adminCount = users.filter((user) => user.role === "admin").length;
-  const vendorCount = users.filter((user) => user.role === "vendor").length;
-  const customerCount = users.filter(
-    (user) => user.role === "customer"
-  ).length;
+  const adminCount = users.filter((user) => user.role === "admin").length
+  const vendorCount = users.filter((user) => user.role === "vendor").length
+  const customerCount = users.filter((user) => user.role === "customer").length
 
-  const handleRoleChange = async (
-    userId: string,
-    newRole: UserRole
-  ) => {
-    setUpdatingId(userId);
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    setUpdatingId(userId)
 
-    const result = await updateUserRole(userId, newRole);
+    const result = await updateUserRole(userId, newRole)
 
     if (result.success) {
-      toast.success(result.message);
-      await loadUsers();
+      toast.success(result.message)
+      await loadUsers()
     } else {
-      toast.error(result.message);
+      toast.error(result.message)
     }
 
-    setUpdatingId("");
-  };
+    setUpdatingId("")
+  }
 
   const getInitials = (name: string) => {
     return name
@@ -116,20 +144,20 @@ export default function AdminUsersPage() {
       .map((word) => word[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase();
-  };
+      .toUpperCase()
+  }
 
   const getRoleStyle = (role: string) => {
     if (role === "admin") {
-      return "bg-purple-50 text-purple-700 border-purple-100";
+      return "bg-purple-50 text-purple-700 border-purple-100"
     }
 
     if (role === "vendor") {
-      return "bg-orange-50 text-[#A65D55] border-orange-100";
+      return "bg-orange-50 text-[#A65D55] border-orange-100"
     }
 
-    return "bg-blue-50 text-blue-700 border-blue-100";
-  };
+    return "bg-blue-50 text-blue-700 border-blue-100"
+  }
 
   return (
     <div className="min-h-screen space-y-7 bg-[#FAF8F7] p-4 sm:p-6 lg:p-8">
@@ -155,10 +183,7 @@ export default function AdminUsersPage() {
           disabled={loading}
           className="flex items-center justify-center gap-2 rounded-xl border border-[#F0E5E1] bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-[#FFF8F6] disabled:opacity-60"
         >
-          <RefreshCw
-            size={16}
-            className={loading ? "animate-spin" : ""}
-          />
+          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
           Refresh Users
         </button>
       </div>
@@ -168,9 +193,7 @@ export default function AdminUsersPage() {
         <div className="rounded-2xl border border-[#F0E5E1] bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
-                Total Users
-              </p>
+              <p className="text-sm font-medium text-gray-500">Total Users</p>
               <h2 className="mt-2 text-3xl font-bold text-gray-900">
                 {users.length}
               </h2>
@@ -187,9 +210,7 @@ export default function AdminUsersPage() {
         <div className="rounded-2xl border border-[#F0E5E1] bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
-                Customers
-              </p>
+              <p className="text-sm font-medium text-gray-500">Customers</p>
               <h2 className="mt-2 text-3xl font-bold text-gray-900">
                 {customerCount}
               </h2>
@@ -198,17 +219,13 @@ export default function AdminUsersPage() {
               <UserRound size={23} />
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-400">
-            Customer accounts
-          </p>
+          <p className="mt-3 text-xs text-gray-400">Customer accounts</p>
         </div>
 
         <div className="rounded-2xl border border-[#F0E5E1] bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
-                Vendors
-              </p>
+              <p className="text-sm font-medium text-gray-500">Vendors</p>
               <h2 className="mt-2 text-3xl font-bold text-gray-900">
                 {vendorCount}
               </h2>
@@ -236,9 +253,7 @@ export default function AdminUsersPage() {
               <ShieldCheck size={23} />
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-400">
-            Users with admin access
-          </p>
+          <p className="mt-3 text-xs text-gray-400">Users with admin access</p>
         </div>
       </div>
 
@@ -247,9 +262,7 @@ export default function AdminUsersPage() {
         <div className="border-b border-[#F0E5E1] p-5 sm:p-6">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                All Users
-              </h2>
+              <h2 className="text-lg font-bold text-gray-900">All Users</h2>
               <p className="mt-1 text-sm text-gray-500">
                 View and manage registered accounts.
               </p>
@@ -259,14 +272,14 @@ export default function AdminUsersPage() {
               <div className="relative">
                 <Search
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
                 />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search name or email..."
-                  className="w-full rounded-xl border border-[#EAE2DF] py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#A65D55] sm:w-64"
+                  className="w-full rounded-xl border border-[#EAE2DF] py-3 pr-4 pl-10 text-sm transition outline-none focus:border-[#A65D55] sm:w-64"
                 />
               </div>
 
@@ -287,19 +300,21 @@ export default function AdminUsersPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[850px] text-left">
             <thead className="bg-[#FCF9F8]">
-              <tr className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <tr className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Role</th>
                 <th className="px-6 py-4">Subscription</th>
                 <th className="px-6 py-4">Joined Date</th>
                 <th className="px-6 py-4">Manage Role</th>
+                <th className="px-6 py-4">Account Status</th>
+                <th className="px-6 py-4">Actions</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-[#F3EEEC]">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
+                  <td colSpan={7} className="px-6 py-16 text-center">
                     <LoaderCircle
                       size={28}
                       className="mx-auto animate-spin text-[#A65D55]"
@@ -311,11 +326,8 @@ export default function AdminUsersPage() {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center">
-                    <Users
-                      size={32}
-                      className="mx-auto text-gray-300"
-                    />
+                  <td colSpan={7} className="px-6 py-16 text-center">
+                    <Users size={32} className="mx-auto text-gray-300" />
                     <p className="mt-3 font-semibold text-gray-700">
                       No users found
                     </p>
@@ -326,10 +338,7 @@ export default function AdminUsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr
-                    key={user._id}
-                    className="transition hover:bg-[#FFFCFB]"
-                  >
+                  <tr key={user._id} className="transition hover:bg-[#FFFCFB]">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {user.image ? (
@@ -370,7 +379,7 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium capitalize text-gray-600">
+                      <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 capitalize">
                         {user.subscriptionPlan}
                       </span>
                     </td>
@@ -383,7 +392,39 @@ export default function AdminUsersPage() {
                           : "N/A"}
                       </div>
                     </td>
+<td className="px-6 py-4">
+  <span
+    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+      user.isBanned
+        ? "bg-red-50 text-red-600"
+        : "bg-green-50 text-green-700"
+    }`}
+  >
+    {user.isBanned ? "Banned" : "Active"}
+  </span>
+</td>
 
+<td className="px-6 py-4">
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => handleBanToggle(user)}
+      className={`rounded-lg px-3 py-2 text-xs font-semibold ${
+        user.isBanned
+          ? "bg-green-50 text-green-700 hover:bg-green-100"
+          : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+      }`}
+    >
+      {user.isBanned ? "Unban" : "Ban"}
+    </button>
+
+    <button
+      onClick={() => handleDelete(user)}
+      className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100"
+    >
+      Delete
+    </button>
+  </div>
+</td>
                     <td className="px-6 py-4">
                       <div className="relative flex items-center gap-2">
                         <select
@@ -395,7 +436,7 @@ export default function AdminUsersPage() {
                               e.target.value as UserRole
                             )
                           }
-                          className="rounded-lg border border-[#EAE2DF] bg-white px-3 py-2 text-sm font-medium capitalize text-gray-700 outline-none focus:border-[#A65D55] disabled:opacity-50"
+                          className="rounded-lg border border-[#EAE2DF] bg-white px-3 py-2 text-sm font-medium text-gray-700 capitalize outline-none focus:border-[#A65D55] disabled:opacity-50"
                         >
                           <option value="customer">Customer</option>
                           <option value="vendor">Vendor</option>
@@ -425,5 +466,5 @@ export default function AdminUsersPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
