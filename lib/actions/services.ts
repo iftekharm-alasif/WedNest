@@ -196,3 +196,43 @@ export const getCustomerBooking = async (
 
   return res.json();
 };
+
+
+export const updateService = async (
+  id: string,
+  data: {
+    serviceName: string;
+    category: string;
+    description: string;
+    price: string | number;
+    location: string;
+    images: string[];
+    vendorId: string;
+  }
+) => {
+  try {
+    const res = await fetch(`${BASE_URL}/services/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseText = await res.text();
+
+    console.log("Update API Status:", res.status);
+    console.log("Update API Response:", responseText);
+
+    const result = JSON.parse(responseText);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Service update failed");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Update Service Action Error:", error);
+    throw error;
+  }
+};

@@ -25,8 +25,6 @@ const SignInPage = () => {
 
 
 
-
-
 const handleSignIn = async (e) => {
   e.preventDefault();
 
@@ -43,6 +41,35 @@ const handleSignIn = async (e) => {
 
     if (error) {
       setError(error.message);
+      return;
+    }
+
+    // Get actual role from the logged-in session
+    const session = await authClient.getSession({
+      query: {
+        disableCookieCache: true,
+      },
+    });
+
+    const actualRole = (
+      session.data?.user as typeof session.data.user & {
+        role?: string;
+      }
+    )?.role;
+
+    if (!actualRole) {
+      await authClient.signOut();
+      setError("Unable to verify your account role. Please try again.");
+      return;
+    }
+
+    // Check selected role with actual database role
+    if (actualRole !== role) {
+      await authClient.signOut();
+
+      setError(
+        `This account is registered as ${actualRole}. Please select ${actualRole} to sign in.`
+      );
       return;
     }
 
