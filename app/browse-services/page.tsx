@@ -20,6 +20,7 @@ type Service = {
   location: string
   images: string[]
   vendorName?: string
+  isActive: boolean
 }
 
 export default function BrowseServicesPage() {
@@ -270,23 +271,28 @@ export default function BrowseServicesPage() {
                         </p>
                       </div>
 
-                      <span className="rounded-lg bg-[#F8EFED] px-3 py-2 text-xs font-semibold text-[#A65D55]">
-                        Available
+                      <span
+                        className={`rounded-lg px-3 py-2 text-xs font-semibold ${
+                          item.isActive
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {item.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
                   <Link
-  href={`/service-details/${item._id}`}
-  className="block w-full rounded-xl bg-[#A65D55] py-3 text-center text-sm font-semibold text-white transition hover:bg-[#884840]"
->
-  View Details
-</Link>
+                    href={`/service-details/${item._id}`}
+                    className="block w-full rounded-xl bg-[#A65D55] py-3 text-center text-sm font-semibold text-white transition hover:bg-[#884840]"
+                  >
+                    View Details
+                  </Link>
                 </div>
               ))}
             </div>
           )}
         </div>
-
       </div>
     </section>
   )

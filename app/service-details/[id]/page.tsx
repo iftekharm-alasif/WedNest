@@ -22,6 +22,8 @@ type Service = {
   images: string[]
   vendorId?: string
   vendorName?: string
+  isActive: boolean
+  vendorEmail?: string
 }
 type Booking = {
   _id: string
@@ -94,6 +96,10 @@ export default function ServiceDetailsPage() {
     }
     if (session.user.role !== "customer") {
       toast.error("Only customers can book services")
+      return
+    }
+    if (!service?.isActive) {
+      toast.error("This service is currently inactive and cannot be booked")
       return
     }
 
@@ -244,6 +250,15 @@ export default function ServiceDetailsPage() {
             <p className="mt-4 text-3xl font-bold text-[#A65D55]">
               ৳{Number(service.price).toLocaleString("en-BD")}
             </p>
+            <span
+              className={`mt-4 inline-block rounded-full px-4 py-2 text-xs font-semibold ${
+                service.isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {service.isActive ? "Active" : "Inactive"}
+            </span>
 
             <div className="mt-6 flex items-center gap-2 text-sm text-gray-500">
               <MapPin size={18} className="text-[#A65D55]" />
@@ -269,6 +284,10 @@ export default function ServiceDetailsPage() {
                   <p className="text-xs text-gray-400">Service Provider</p>
                   <p className="mt-1 font-semibold text-gray-800">
                     {service.vendorName || "WedNest Vendor"}
+                  </p>
+
+                  <p className="mt-2 text-sm text-gray-500">
+                    Email: {service.vendorEmail || "Email not available"}
                   </p>
                 </div>
               </div>
@@ -297,6 +316,10 @@ export default function ServiceDetailsPage() {
               ) : isOwnService ? (
                 <p className="mt-5 rounded-xl bg-[#F8EFED] p-4 text-sm text-gray-600">
                   You cannot book your own service.
+                </p>
+              ) : !service.isActive ? (
+                <p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-600">
+                  This service is currently inactive. Booking is unavailable.
                 </p>
               ) : session.user.role !== "customer" ? (
                 <p className="mt-5 rounded-xl bg-[#F8EFED] p-4 text-sm text-gray-600">
