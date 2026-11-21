@@ -104,6 +104,9 @@ export const createBooking = async (data: {
   serviceId: string;
   vendorId: string;
   customerId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
   eventDate: string;
   eventLocation: string;
   message: string;
@@ -115,6 +118,81 @@ export const createBooking = async (data: {
     },
     body: JSON.stringify(data),
   });
+
+  return res.json();
+};
+
+
+// Get Vendor Bookings
+export const getVendorBookings = async (vendorId: string) => {
+  const res = await fetch(
+    `${BASE_URL}/vendor-bookings?vendorId=${vendorId}`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to load bookings");
+  }
+
+  return res.json();
+};
+
+// Update Booking Status
+export const updateBookingStatus = async (
+  id: string,
+  status: "accepted" | "rejected"
+) => {
+  const res = await fetch(`${BASE_URL}/bookings/${id}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  return res.json();
+};
+
+// Get Customer Bookings
+export const getCustomerBookings = async (customerId: string) => {
+  const res = await fetch(
+    `${BASE_URL}/customer-bookings?customerId=${customerId}`,
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to load bookings");
+  }
+
+  return res.json();
+};
+
+// Cancel Customer Booking
+export const cancelCustomerBooking = async (
+  id: string,
+  customerId: string,
+) => {
+  const res = await fetch(`${BASE_URL}/bookings/${id}/cancel`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ customerId }),
+  });
+
+  return res.json();
+};
+
+// Get Customer Booking
+export const getCustomerBooking = async (
+  serviceId: string,
+  customerId: string
+) => {
+  const res = await fetch(
+    `${BASE_URL}/customer-booking?serviceId=${serviceId}&customerId=${customerId}`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to load booking");
+  }
 
   return res.json();
 };
