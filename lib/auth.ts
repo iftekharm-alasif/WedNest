@@ -5,9 +5,23 @@ import { MongoClient, ObjectId } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
 
-const client = new MongoClient(process.env.MONGODB_URI as string);
+
+declare global {
+  var _mongoClient: MongoClient | undefined;
+}
+
+const client =
+  globalThis._mongoClient ??
+  new MongoClient(process.env.MONGODB_URI as string);
+
+if (!globalThis._mongoClient) {
+  globalThis._mongoClient = client;
+}
+
 const db = client.db("wednestdb");
+
 export const users = db.collection("user");
+
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,

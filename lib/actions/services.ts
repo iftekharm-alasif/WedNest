@@ -224,21 +224,43 @@ export const getVendorBookings = async () => {
 };
 
 
+
 // Update Booking Status
 export const updateBookingStatus = async (
   id: string,
   status: "accepted" | "rejected" | "completed"
 ) => {
-  const res = await fetch(`${BASE_URL}/bookings/${id}/status`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ status }),
-  });
+  try {
+    const { data } = await authClient.token();
 
-  return res.json();
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/bookings/${id}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${data.token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    const result = await res.json();
+
+    console.log("Update Booking Status API:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to update booking");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Update Booking Status Error:", error);
+    throw error;
+  }
 };
+
 
 // Get Customer Bookings
 export const getCustomerBookings = async (customerId: string) => {
