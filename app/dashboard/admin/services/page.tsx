@@ -31,7 +31,6 @@ import {
   updateServiceStatus,
   deleteAdminService,
 } from "@/lib/actions/admin-services-api"
-
 type Service = {
   _id: string
   serviceName: string
