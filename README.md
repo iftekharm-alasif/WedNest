@@ -2,11 +2,11 @@
 
 WedNest is a wedding planning platform designed to make wedding management easier and more organized. It connects customers with wedding service providers, allowing users to explore services, book vendors, and manage their wedding plans from one platform.
 
-The platform includes separate dashboards for Admin, Vendor, and Customer users, with role-based access control and secure authentication.
+The platform provides separate dashboards for Admin, Vendor, and Customer users with secure authentication and role-based access control.
 
-## ✨ Important Features
+## ✨ Key Features
 
-### Customer
+### 👰 Customer
 - Browse available wedding services.
 - View service details and vendor information.
 - Book wedding services.
@@ -14,7 +14,7 @@ The platform includes separate dashboards for Admin, Vendor, and Customer users,
 - Cancel pending bookings.
 - Manage personal dashboard.
 
-### Vendor
+### 💼 Vendor
 - Create and manage wedding services.
 - Upload service images.
 - Edit and delete own services.
@@ -23,7 +23,7 @@ The platform includes separate dashboards for Admin, Vendor, and Customer users,
 - Upgrade to Premium subscription using Stripe.
 - Manage vendor dashboard.
 
-### Admin
+### 🛡️ Admin
 - View and manage platform users.
 - Monitor all listed services.
 - Approve or reject vendor services.
@@ -31,15 +31,15 @@ The platform includes separate dashboards for Admin, Vendor, and Customer users,
 - View transaction history.
 - Monitor subscription payments and platform revenue.
 
-### Security & Payment
+### 🔐 Authentication & Payment
 - Better Auth authentication.
 - JWT-based API authentication.
-- Role-based authorization for Admin, Vendor, and Customer.
+- Role-based authorization.
 - Protected backend routes.
 - Service ownership verification.
 - Stripe Checkout integration.
 - Stripe Webhook signature verification.
-- Secure subscription status updates.
+- Automatic subscription status updates.
 
 ## 🛠️ Technology Stack
 
@@ -74,7 +74,7 @@ Make sure you have installed:
 
 - Node.js
 - npm
-- MongoDB database
+- MongoDB
 - Git
 
 ### 1. Clone the Client Repository
@@ -101,11 +101,14 @@ Create a `.env` file in the frontend project:
 
 ```env
 MONGODB_URI=your_mongodb_connection_string
+
 BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=your_better_auth_secret
 NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
 STRIPE_SECRET_KEY=your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 STRIPE_PREMIUM_PRICE_ID=your_stripe_price_id
@@ -116,6 +119,7 @@ Create a `.env` file in the backend project:
 ```env
 PORT=5000
 AUTH_URL=http://localhost:3000
+
 MONGO_DB_USER=your_mongodb_username
 MONGO_DB_PASSWORD=your_mongodb_password
 ```
@@ -124,7 +128,7 @@ Add any other environment variables required by your project configuration.
 
 **Important:** Never upload `.env` files or expose secret keys in a public repository.
 
-## 🚀 How to Run the Project Locally
+## 🚀 Run the Project Locally
 
 ### Start the Backend
 
@@ -133,7 +137,7 @@ cd wednest-server
 node index.js
 ```
 
-Backend will run at:
+Backend URL:
 
 `http://localhost:5000`
 
@@ -146,7 +150,7 @@ cd wednest
 npm run dev
 ```
 
-Frontend will run at:
+Frontend URL:
 
 `http://localhost:3000`
 
@@ -154,13 +158,12 @@ Open the frontend URL in your browser to use WedNest.
 
 ## 🌐 Live Website
 
-**Live Website:** YOUR_LIVE_WEBSITE_URL
+**Live Website:** https://wed-nest.vercel.app
 
 ## 🔗 GitHub Repositories
 
-- **Client Repository:** YOUR_CLIENT_REPOSITORY_URL
-- **Server Repository:** YOUR_SERVER_REPOSITORY_URL
-
+- **Client Repository:** https://github.com/iftekharm-alasif/WedNest
+- **Server Repository:** https://github.com/iftekharm-alasif/WedNest-Server
 ---
 
 Made with ❤️ for better wedding planning.
