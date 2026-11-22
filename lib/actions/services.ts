@@ -99,20 +99,42 @@ export const deleteService = async (id: string) => {
 };
 
 
+
 export const updateServiceActive = async (
   id: string,
   isActive: boolean
 ) => {
-  const res = await fetch(`${BASE_URL}/services/${id}/active`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ isActive }),
-  });
+  try {
+    const { data } = await authClient.token();
 
-  return res.json();
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/services/${id}/active`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${data.token}`,
+      },
+      body: JSON.stringify({ isActive }),
+    });
+
+    const result = await res.json();
+
+    console.log("Active Status API:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to update active status");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Update Active Status Error:", error);
+    throw error;
+  }
 };
+
 
 export const getBrowseServices = async () => {
   const res = await fetch(`${BASE_URL}/browse-services`);
