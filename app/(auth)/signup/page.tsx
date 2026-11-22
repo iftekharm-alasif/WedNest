@@ -1,9 +1,11 @@
+
 "use client"
 
 import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
+import { toast } from "sonner"
 import {
   UserRound,
   Store,
@@ -13,6 +15,7 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
+  XCircle,
 } from "lucide-react"
 
 const SignUpPage = () => {
@@ -21,49 +24,88 @@ const SignUpPage = () => {
   const [role, setRole] = useState("customer")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState("")
+  const [password, setPassword] = useState("")
+
+  const requirements = [
+    {
+      label: "At least 8 characters",
+      valid: password.length >= 8,
+    },
+    {
+      label: "One uppercase letter (A-Z)",
+      valid: /[A-Z]/.test(password),
+    },
+    {
+      label: "One lowercase letter (a-z)",
+      valid: /[a-z]/.test(password),
+    },
+    {
+      label: "One number (0-9)",
+      valid: /[0-9]/.test(password),
+    },
+    {
+      label: "One special character (@#$! etc.)",
+      valid: /[^A-Za-z0-9]/.test(password),
+    },
+  ]
+
+  const isPasswordValid = requirements.every((item) => item.valid)
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const form = e.currentTarget
-
     const formData = new FormData(form)
 
     const userData = {
       name: String(formData.get("name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
-      password: String(formData.get("password") || ""),
-      role: role,
+      password,
+      role,
     }
+
+    if (!isPasswordValid) {
+      setError("Please fulfill all password requirements.")
+      toast.error("Please enter a valid password.")
+      return
+    }
+
     try {
       setLoading(true)
       setError("")
 
-      const { data, error } = await authClient.signUp.email(userData)
+      const { error } = await authClient.signUp.email(userData)
 
       if (error) {
         setError(error.message || "Registration failed. Please try again.")
+        toast.error(error.message || "Registration failed.")
         return
       }
 
-      console.log("Registration successful:", data)
+      toast.success("Account created successfully!")
 
       router.push("/dashboard")
       router.refresh()
     } catch (err) {
       console.error("Signup error:", err)
       setError("Something went wrong. Please try again.")
+      toast.error("Registration failed. Please try again.")
     } finally {
       setLoading(false)
     }
   }
 
+
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#FAF7F5] px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border border-[#F0E5E1] bg-white p-7 shadow-lg sm:p-9">
         <div className="mb-7 text-center">
-          <h1 className="text-3xl font-bold text-[#A65D55]">Create Account</h1>
+          <h1 className="text-3xl font-bold text-[#A65D55]">
+            Create Account
+          </h1>
           <p className="mt-2 text-sm text-gray-500">
             Join WedNest and start planning something beautiful
           </p>
@@ -86,7 +128,7 @@ const SignUpPage = () => {
                 }`}
               >
                 {role === "customer" && (
-                  <CheckCircle2 size={17} className="absolute top-2 right-2" />
+                  <CheckCircle2 size={17} className="absolute right-2 top-2" />
                 )}
 
                 <UserRound className="mx-auto mb-2" size={25} />
@@ -104,7 +146,7 @@ const SignUpPage = () => {
                 }`}
               >
                 {role === "vendor" && (
-                  <CheckCircle2 size={17} className="absolute top-2 right-2" />
+                  <CheckCircle2 size={17} className="absolute right-2 top-2" />
                 )}
 
                 <Store className="mx-auto mb-2" size={25} />
@@ -126,6 +168,7 @@ const SignUpPage = () => {
                 name="name"
                 type="text"
                 placeholder="Enter your full name"
+                maxLength={100}
                 className="h-11 w-full bg-transparent px-3 text-sm outline-none"
                 required
               />
@@ -162,7 +205,8 @@ const SignUpPage = () => {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
-                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-11 w-full bg-transparent px-3 text-sm outline-none"
                 required
               />
@@ -174,6 +218,35 @@ const SignUpPage = () => {
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
+            </div>
+
+            <div className="mt-3 rounded-lg bg-gray-50 p-3">
+              <p className="mb-2 text-xs font-semibold text-gray-700">
+                Password Requirements
+              </p>
+
+              <div className="space-y-2">
+                {requirements.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    {item.valid ? (
+                      <CheckCircle2 size={15} className="text-green-600" />
+                    ) : (
+                      <XCircle size={15} className="text-gray-400" />
+                    )}
+
+                    <span
+                      className={
+                        item.valid ? "text-green-700" : "text-gray-500"
+                      }
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -190,7 +263,7 @@ const SignUpPage = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !isPasswordValid}
             className="w-full rounded-lg bg-[#A65D55] py-3 font-semibold text-white transition hover:bg-[#884840] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading
@@ -198,6 +271,13 @@ const SignUpPage = () => {
               : `Create ${role === "customer" ? "Customer" : "Vendor"} Account`}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400">OR</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
