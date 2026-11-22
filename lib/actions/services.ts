@@ -312,21 +312,38 @@ export const getCustomerBookings = async () => {
 };
 
 
-// Cancel Customer Booking
-export const cancelCustomerBooking = async (
-  id: string,
-  customerId: string,
-) => {
-  const res = await fetch(`${BASE_URL}/bookings/${id}/cancel`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ customerId }),
-  });
 
-  return res.json();
+// Cancel Customer Booking
+export const cancelCustomerBooking = async (id: string) => {
+  try {
+    const { data } = await authClient.token();
+
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/bookings/${id}/cancel`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    console.log("Cancel Booking API:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to cancel booking");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Cancel Customer Booking Error:", error);
+    throw error;
+  }
 };
+
 
 // Get Customer Booking
 export const getCustomerBooking = async (

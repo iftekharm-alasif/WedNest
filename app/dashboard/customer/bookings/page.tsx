@@ -1,14 +1,24 @@
+"use client"
 
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { authClient } from "@/lib/auth-client"
 import {
   getCustomerBookings,
   cancelCustomerBooking,
-} from "@/lib/actions/services";
-import { toast } from "sonner";
+} from "@/lib/actions/services"
+import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   CalendarDays,
   MapPin,
@@ -16,125 +26,112 @@ import {
   Clock3,
   Eye,
   XCircle,
-} from "lucide-react";
+} from "lucide-react"
 
 type Booking = {
-  _id: string;
-  serviceId: string;
-  serviceName: string;
-  vendorId: string;
-  vendorName: string;
-  customerId: string;
-  eventDate: string;
-  eventLocation: string;
-  message: string;
-  status: "pending" | "accepted" | "rejected" | "cancelled" | "completed";
-  price: number;
-  serviceImage: string;
-  createdAt: string;
-};
+  _id: string
+  serviceId: string
+  serviceName: string
+  vendorId: string
+  vendorName: string
+  customerId: string
+  eventDate: string
+  eventLocation: string
+  message: string
+  status: "pending" | "accepted" | "rejected" | "cancelled" | "completed"
+  price: number
+  serviceImage: string
+  createdAt: string
+}
 
-type Filter = "all" | "pending" | "accepted" | "rejected" | "cancelled";
+type Filter = "all" | "pending" | "accepted" | "rejected" | "cancelled"
 
 export default function CustomerBookingsPage() {
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession()
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<Filter>("all");
-  const [cancelLoading, setCancelLoading] = useState("");
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeFilter, setActiveFilter] = useState<Filter>("all")
+  const [cancelLoading, setCancelLoading] = useState("")
 
   useEffect(() => {
     const loadBookings = async () => {
-      if (isPending) return;
+      if (isPending) return
 
       if (!session?.user?.id) {
-        setLoading(false);
-        return;
+        setLoading(false)
+        return
       }
 
       try {
-        const data = await getCustomerBookings(session.user.id);
-        setBookings(data);
+        const data = await getCustomerBookings(session.user.id)
+        setBookings(data)
       } catch (error) {
-        console.log(error);
-        toast.error("Failed to load your bookings");
+        console.log(error)
+        toast.error("Failed to load your bookings")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadBookings();
-  }, [session?.user?.id, isPending]);
+    loadBookings()
+  }, [session?.user?.id, isPending])
 
   const handleCancel = async (bookingId: string) => {
-    if (!session?.user?.id) return;
-
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this booking?",
-    );
-
-    if (!confirmed) return;
-
     try {
-      setCancelLoading(bookingId);
+      setCancelLoading(bookingId)
 
-      const result = await cancelCustomerBooking(
-        bookingId,
-        session.user.id,
-      );
+      const result = await cancelCustomerBooking(bookingId)
 
       if (!result.success) {
-        toast.error(result.message || "Failed to cancel booking");
-        return;
+        toast.error(result.message || "Failed to cancel booking")
+        return
       }
 
       setBookings((prev) =>
         prev.map((item) =>
-          item._id === bookingId
-            ? { ...item, status: "cancelled" }
-            : item,
-        ),
-      );
+          item._id === bookingId ? { ...item, status: "cancelled" } : item
+        )
+      )
 
-      toast.success("Booking cancelled successfully");
+      toast.success("Booking cancelled successfully")
     } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+      console.log(error)
+      toast.error("Something went wrong")
     } finally {
-      setCancelLoading("");
+      setCancelLoading("")
     }
-  };
+  }
 
   const filteredBookings =
     activeFilter === "all"
       ? bookings
-      : bookings.filter((item) => item.status === activeFilter);
+      : bookings.filter((item) => item.status === activeFilter)
 
   const pendingCount = bookings.filter(
-    (item) => item.status === "pending",
-  ).length;
+    (item) => item.status === "pending"
+  ).length
 
   const acceptedCount = bookings.filter(
-    (item) => item.status === "accepted",
-  ).length;
+    (item) => item.status === "accepted"
+  ).length
 
   const getStatusStyle = (status: Booking["status"]) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-50 text-yellow-700";
+        return "bg-yellow-50 text-yellow-700"
       case "accepted":
-        return "bg-green-50 text-green-700";
+        return "bg-green-50 text-green-700"
       case "rejected":
-        return "bg-red-50 text-red-700";
+        return "bg-red-50 text-red-700"
       case "cancelled":
-        return "bg-gray-100 text-gray-600";
+        return "bg-gray-100 text-gray-600"
       case "completed":
-        return "bg-blue-50 text-blue-700";
+        return "bg-blue-50 text-blue-700"
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-gray-100 text-gray-600"
     }
-  };
+  }
 
   if (isPending || loading) {
     return (
@@ -143,18 +140,14 @@ export default function CustomerBookingsPage() {
         <div className="mt-8 h-32 rounded-2xl bg-[#F5EFEC]" />
         <div className="mt-6 h-64 rounded-2xl bg-[#F5EFEC]" />
       </div>
-    );
+    )
   }
 
   if (!session?.user) {
     return (
       <div className="px-6 py-24 text-center">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Please Sign In
-        </h2>
-        <p className="mt-2 text-gray-500">
-          Sign in to view your bookings.
-        </p>
+        <h2 className="text-2xl font-bold text-gray-800">Please Sign In</h2>
+        <p className="mt-2 text-gray-500">Sign in to view your bookings.</p>
         <Link
           href="/signin"
           className="mt-5 inline-block rounded-xl bg-[#A65D55] px-6 py-3 text-sm font-semibold text-white"
@@ -162,7 +155,7 @@ export default function CustomerBookingsPage() {
           Sign In
         </Link>
       </div>
-    );
+    )
   }
 
   return (
@@ -172,9 +165,7 @@ export default function CustomerBookingsPage() {
           <p className="text-sm font-medium text-[#A65D55]">
             Customer Dashboard
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-gray-900">
-            My Bookings
-          </h1>
+          <h1 className="mt-2 text-3xl font-bold text-gray-900">My Bookings</h1>
           <p className="mt-2 text-sm text-gray-500">
             Manage and track all your wedding service bookings.
           </p>
@@ -235,10 +226,7 @@ export default function CustomerBookingsPage() {
         {/* Booking List */}
         {filteredBookings.length === 0 ? (
           <div className="rounded-2xl border border-[#F0E5E1] bg-white px-5 py-16 text-center">
-            <ClipboardList
-              size={42}
-              className="mx-auto text-[#D6A69D]"
-            />
+            <ClipboardList size={42} className="mx-auto text-[#D6A69D]" />
             <h2 className="mt-4 text-xl font-semibold text-gray-800">
               No Bookings Found
             </h2>
@@ -332,16 +320,46 @@ export default function CustomerBookingsPage() {
                       </Link>
 
                       {item.status === "pending" && (
-                        <button
-                          onClick={() => handleCancel(item._id)}
-                          disabled={cancelLoading === item._id}
-                          className="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-60"
-                        >
-                          <XCircle size={16} />
-                          {cancelLoading === item._id
-                            ? "Cancelling..."
-                            : "Cancel Booking"}
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              disabled={cancelLoading === item._id}
+                              className="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                            >
+                              <XCircle size={16} />
+                              {cancelLoading === item._id
+                                ? "Cancelling..."
+                                : "Cancel Booking"}
+                            </button>
+                          </AlertDialogTrigger>
+
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Cancel This Booking?
+                              </AlertDialogTitle>
+
+                              <AlertDialogDescription>
+                                Are you sure you want to cancel your booking for{" "}
+                                <strong>{item.serviceName}</strong>? This action
+                                cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>
+                                Keep Booking
+                              </AlertDialogCancel>
+
+                              <AlertDialogAction
+                                onClick={() => handleCancel(item._id)}
+                                className="bg-red-600 text-white hover:bg-red-700"
+                              >
+                                Yes, Cancel Booking
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </div>
                   </div>
@@ -352,5 +370,5 @@ export default function CustomerBookingsPage() {
         )}
       </div>
     </section>
-  );
+  )
 }
