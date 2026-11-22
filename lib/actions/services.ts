@@ -168,28 +168,46 @@ export const getServiceById = async (id: string) => {
   return res.json();
 };
 
+
 // Create Booking
 export const createBooking = async (data: {
   serviceId: string;
-  vendorId: string;
-  customerId: string;
-  customerName: string;
-  customerEmail: string;
   customerPhone: string;
   eventDate: string;
   eventLocation: string;
   message: string;
 }) => {
-  const res = await fetch(`${BASE_URL}/bookings`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    const { data: tokenData } = await authClient.token();
 
-  return res.json();
+    if (!tokenData?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/bookings`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenData.token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+
+    console.log("Create Booking API:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to create booking");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Create Booking Error:", error);
+    throw error;
+  }
 };
+
 
 
 
