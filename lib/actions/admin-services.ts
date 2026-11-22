@@ -111,32 +111,4 @@ export async function updateServiceStatus(
   }
 }
 
-export async function deleteAdminService(serviceId: string) {
-  try {
-    await checkAdmin();
 
-    if (!ObjectId.isValid(serviceId)) {
-      return { success: false, message: "Invalid service ID" };
-    }
-
-    const result = await services.deleteOne({
-      _id: new ObjectId(serviceId),
-    });
-
-    if (!result.deletedCount) {
-      return { success: false, message: "Service not found" };
-    }
-
-    return {
-      success: true,
-      message: "Service deleted successfully",
-    };
-  } catch (error) {
-    console.error("Delete service error:", error);
-
-    return {
-      success: false,
-      message: "Failed to delete service",
-    };
-  }
-}

@@ -72,3 +72,34 @@ export const updateServiceStatus = async (
     throw error;
   }
 };
+
+
+export const deleteAdminService = async (serviceId: string) => {
+  try {
+    const { data } = await authClient.token();
+
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/admin/services/${serviceId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    console.log("Delete Admin Service:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to delete service");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Delete Admin Service Error:", error);
+    throw error;
+  }
+};
