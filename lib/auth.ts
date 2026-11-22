@@ -26,6 +26,11 @@ export const users = db.collection<{
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://wed-nest.vercel.app",
+    "https://*.vercel.app",
+  ],
 
   database: mongodbAdapter(db, {
     client,
