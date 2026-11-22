@@ -1,3 +1,5 @@
+import { authClient } from "@/lib/auth-client";
+
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
@@ -10,16 +12,35 @@ type ServiceData = {
   images: string[];
 };
 
+// Create Services
 export const createServices = async (data: ServiceData) => {
-  const res = await fetch(`${BASE_URL}/services`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    const { data: tokenData } = await authClient.token();
 
-  return res.json();
+    if (!tokenData?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/services`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenData.token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to create service");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Create Service Error:", error);
+    throw error;
+  }
 };
 
 // Get Services
@@ -44,13 +65,39 @@ export const uploadServiceImages = async (files: File[]) => {
 };
 
 // Delete Service
-export const deleteService = async (id: string) => {
-  const res = await fetch(`${BASE_URL}/services/${id}`, {
-    method: "DELETE",
-  });
 
-  return res.json();
+
+export const deleteService = async (id: string) => {
+  try {
+    const { data } = await authClient.token();
+
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/services/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    console.log("Delete API Status:", res.status);
+    console.log("Delete API Response:", result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to delete service");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Delete Service Error:", error);
+    throw error;
+  }
 };
+
 
 export const updateServiceActive = async (
   id: string,
@@ -198,6 +245,7 @@ export const getCustomerBooking = async (
 };
 
 
+
 export const updateService = async (
   id: string,
   data: {
@@ -211,20 +259,27 @@ export const updateService = async (
   }
 ) => {
   try {
+    // Get JWT token
+    const { data: tokenData, error } = await authClient.token();
+
+    if (!tokenData?.token) {
+      throw new Error("Please login first");
+    }
+
+    // Send request with JWT
     const res = await fetch(`${BASE_URL}/services/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenData.token}`,
       },
       body: JSON.stringify(data),
     });
 
-    const responseText = await res.text();
+    const result = await res.json();
 
     console.log("Update API Status:", res.status);
-    console.log("Update API Response:", responseText);
-
-    const result = JSON.parse(responseText);
+    console.log("Update API Response:", result);
 
     if (!res.ok) {
       throw new Error(result.message || "Service update failed");

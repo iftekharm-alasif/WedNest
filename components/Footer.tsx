@@ -46,7 +46,7 @@ const Footer = () => {
 
             <div className="mt-7 flex gap-3">
               <a
-                href="https://www.facebook.com/"
+                href="https://www.facebook.com/iftekhar.m.alAsif"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/65 hover:bg-[#A65D55] hover:text-white"
@@ -54,7 +54,7 @@ const Footer = () => {
                 Facebook
               </a>
               <a
-                href="https://www.instagram.com/"
+                href="https://www.instagram.com/steike_x_iftekhar/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/65 hover:bg-[#A65D55] hover:text-white"

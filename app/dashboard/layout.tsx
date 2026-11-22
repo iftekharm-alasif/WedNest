@@ -1,5 +1,5 @@
 import DashboardSidebar from "@/components/Dashboard-Sidebar";
-import Footer from "@/components/Footer";
+import JwtTest from "@/components/JwtTest";
 import {
   SidebarInset,
   SidebarProvider,
@@ -28,7 +28,9 @@ export default async function DashboardLayout({
             {role} Dashboard
           </h2>
         </header>
-
+        <div className="border-b bg-white p-4">
+          <JwtTest />
+        </div>
         <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-[#FAF7F0]">
           <main className="flex-1 p-5 md:p-8">
             {children}

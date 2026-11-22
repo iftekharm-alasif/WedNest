@@ -3,10 +3,11 @@ import { betterAuth } from "better-auth";
 import { createAuthMiddleware, APIError } from "better-auth/api";
 import { MongoClient, ObjectId } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { jwt } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGODB_URI as string);
 const db = client.db("wednestdb");
-const users = db.collection("user");
+export const users = db.collection("user");
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -102,4 +103,7 @@ user: {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+    plugins: [
+    jwt(),
+  ],
 });
