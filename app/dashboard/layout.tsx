@@ -1,6 +1,10 @@
-
 import DashboardSidebar from "@/components/Dashboard-Sidebar";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import Footer from "@/components/Footer";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { requireDashboardUser } from "@/lib/dashboard-auth";
 
 export default async function DashboardLayout({
@@ -12,22 +16,24 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-    <DashboardSidebar
+      <DashboardSidebar
         role={role}
         userName={session.user.name || "User"}
       />
 
-      <SidebarInset>
-        <header className="flex h-16 items-center gap-4 border-b border-[#F0E5E1] px-6">
+      <SidebarInset className="min-h-screen">
+        <header className="flex h-16 shrink-0 items-center gap-4 border-b border-[#F0E5E1] bg-white px-6">
           <SidebarTrigger />
           <h2 className="font-semibold capitalize text-[#A65D55]">
             {role} Dashboard
           </h2>
         </header>
 
-        <main className="min-h-screen bg-[#FAF7F0] p-5 md:p-8">
-          {children}
-        </main>
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-[#FAF7F0]">
+          <main className="flex-1 p-5 md:p-8">
+            {children}
+          </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

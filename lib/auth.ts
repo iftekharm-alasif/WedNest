@@ -19,25 +19,30 @@ export const auth = betterAuth({
     enabled: true,
   },
 
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        required: true,
-        input: true,
-      },
-      isBanned: {
-        type: "boolean",
-        required: false,
-        input: false,
-      },
-      banReason: {
-        type: "string",
-        required: false,
-        input: false,
-      },
+user: {
+  additionalFields: {
+    role: {
+      type: "string",
+      required: true,
+      input: true,
+    },
+    businessName: {
+      type: "string",
+      required: false,
+      input: false,
+    },
+    subscriptionPlan: {
+      type: "string",
+      required: false,
+      input: false,
+    },
+    subscriptionExpiresAt: {
+      type: "date",
+      required: false,
+      input: false,
     },
   },
+},
 
   // Block banned users during email/password login
   hooks: {

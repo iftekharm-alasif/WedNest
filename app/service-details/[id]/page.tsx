@@ -87,70 +87,66 @@ export default function ServiceDetailsPage() {
     checkBooking()
   }, [id, session?.user?.id, isPending])
 
-  const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
 
-    if (!session?.user) {
-      toast.error("Please sign in to book this service")
-      return
-    }
-    if (session.user.role !== "customer") {
-      toast.error("Only customers can book services")
-      return
-    }
-    if (!service?.isActive) {
-      toast.error("This service is currently inactive and cannot be booked")
-      return
-    }
+const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    if (session.user.id === service?.vendorId) {
-      toast.error("You cannot book your own service")
-      return
-    }
-
-    if (!eventDate || !eventLocation.trim()) {
-      toast.error("Please fill in the required fields")
-      return
-    }
-
-    try {
-      setBookingLoading(true)
-      console.log({
-        customerName: session.user.name,
-        customerEmail: session.user.email,
-        customerPhone,
-      })
-
-      const result = await createBooking({
-        serviceId: service!._id,
-        vendorId: service!.vendorId || "",
-        customerId: session.user.id,
-        customerName: session.user.name,
-        customerEmail: session.user.email,
-        customerPhone,
-        eventDate,
-        eventLocation,
-        message,
-      })
-
-      if (!result.success) {
-        toast.error(result.message || "Booking request failed")
-        return
-      }
-
-      toast.success("Booking request sent successfully!")
-      toast.success("Booking request sent successfully!")
-      setEventDate("")
-      setEventLocation("")
-      setCustomerPhone("")
-      setMessage("")
-    } catch (error) {
-      console.log(error)
-      toast.error("Failed to send booking request")
-    } finally {
-      setBookingLoading(false)
-    }
+  if (!session?.user) {
+    toast.error("Please sign in to book this service");
+    return;
   }
+
+  if (session.user.role !== "customer") {
+    toast.error("Only customers can book services");
+    return;
+  }
+
+  if (!service?.isActive) {
+    toast.error("This service is currently inactive and cannot be booked");
+    return;
+  }
+
+  if (session.user.id === service.vendorId) {
+    toast.error("You cannot book your own service");
+    return;
+  }
+
+  if (!eventDate || !eventLocation.trim() || !customerPhone.trim()) {
+    toast.error("Please fill in the required fields");
+    return;
+  }
+
+  try {
+    setBookingLoading(true);
+
+    const result = await createBooking({
+      serviceId: service._id,
+      vendorId: service.vendorId || "",
+      customerId: session.user.id,
+      customerName: session.user.name,
+      customerEmail: session.user.email,
+      customerPhone,
+      eventDate,
+      eventLocation,
+      message,
+    });
+
+    if (!result.success) {
+      toast.error(result.message || "Booking request failed");
+      setBookingLoading(false);
+      return;
+    }
+
+    toast.success("Booking request sent successfully!");
+
+    window.location.reload();
+  } catch (error) {
+    console.log(error);
+    toast.error("Failed to send booking request");
+    setBookingLoading(false);
+  }
+};
+
 
   if (loading || isPending) {
     return (

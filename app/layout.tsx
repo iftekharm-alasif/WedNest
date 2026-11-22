@@ -1,36 +1,52 @@
-import { Geist, Geist_Mono } from "next/font/google"
 
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner";
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+import Footer from "@/components/Footer";
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-})
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        geist.variable
+      )}
     >
-      
-      <body>
+      <body className="min-h-screen">
         <ThemeProvider>
-          <Navbar></Navbar>
-          <Toaster />
-          {children}
-          </ThemeProvider>
+          <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <Toaster />
+
+            <div className="flex-1">
+              {children}
+            </div>
+
+            <Footer />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

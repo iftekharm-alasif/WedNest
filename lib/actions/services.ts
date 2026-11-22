@@ -139,7 +139,7 @@ export const getVendorBookings = async (vendorId: string) => {
 // Update Booking Status
 export const updateBookingStatus = async (
   id: string,
-  status: "accepted" | "rejected"
+  status: "accepted" | "rejected" | "completed"
 ) => {
   const res = await fetch(`${BASE_URL}/bookings/${id}/status`, {
     method: "PATCH",

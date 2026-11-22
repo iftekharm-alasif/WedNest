@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -54,7 +55,7 @@ export default function VendorBookingsPage() {
 
   const handleStatusChange = async (
     id: string,
-    status: "accepted" | "rejected"
+    status: "accepted" | "rejected" | "completed"
   ) => {
     try {
       setUpdatingId(id)
@@ -67,10 +68,16 @@ export default function VendorBookingsPage() {
       }
 
       setBookings((previous) =>
-        previous.map((item) => (item._id === id ? { ...item, status } : item))
+        previous.map((item) =>
+          item._id === id ? { ...item, status } : item
+        )
       )
 
-      toast.success(`Booking ${status} successfully`)
+      if (status === "completed") {
+        toast.success("Service completed successfully!")
+      } else {
+        toast.success(`Booking ${status} successfully`)
+      }
     } catch (error) {
       console.log(error)
       toast.error("Something went wrong")
@@ -88,6 +95,14 @@ export default function VendorBookingsPage() {
       return "bg-red-50 text-red-600"
     }
 
+    if (status === "completed") {
+      return "bg-blue-50 text-blue-700"
+    }
+
+    if (status === "cancelled") {
+      return "bg-gray-100 text-gray-600"
+    }
+
     return "bg-yellow-50 text-yellow-700"
   }
 
@@ -103,17 +118,19 @@ export default function VendorBookingsPage() {
       </div>
     )
   }
-if (session?.user?.role !== "vendor") {
-  return (
-    <div className="py-20 text-center text-gray-500">
-      Only vendors can access this page.
-    </div>
-  )
-}
+
   if (!session) {
     return (
       <div className="py-20 text-center text-gray-500">
         Please sign in to view your bookings.
+      </div>
+    )
+  }
+
+  if (session.user.role !== "vendor") {
+    return (
+      <div className="py-20 text-center text-gray-500">
+        Only vendors can access this page.
       </div>
     )
   }
@@ -131,7 +148,7 @@ if (session?.user?.role !== "vendor") {
           </p>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-xl border border-[#F0E5E1] bg-white p-4">
             <p className="text-sm text-gray-500">Total Bookings</p>
             <p className="mt-2 text-2xl font-bold text-gray-900">
@@ -146,10 +163,17 @@ if (session?.user?.role !== "vendor") {
             </p>
           </div>
 
-          <div className="col-span-2 rounded-xl border border-[#F0E5E1] bg-white p-4 sm:col-span-1">
+          <div className="rounded-xl border border-[#F0E5E1] bg-white p-4">
             <p className="text-sm text-gray-500">Accepted</p>
             <p className="mt-2 text-2xl font-bold text-green-600">
               {bookings.filter((item) => item.status === "accepted").length}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-[#F0E5E1] bg-white p-4">
+            <p className="text-sm text-gray-500">Completed</p>
+            <p className="mt-2 text-2xl font-bold text-blue-600">
+              {bookings.filter((item) => item.status === "completed").length}
             </p>
           </div>
         </div>
@@ -176,6 +200,7 @@ if (session?.user?.role !== "vendor") {
                     <h2 className="text-lg font-bold text-gray-900">
                       {item.serviceName}
                     </h2>
+
                     <div className="mt-2 space-y-1 text-sm text-gray-500">
                       <p>
                         Customer:{" "}
@@ -239,6 +264,28 @@ if (session?.user?.role !== "vendor") {
                       <Check size={17} />
                       Accept Booking
                     </button>
+                  </div>
+                )}
+
+                {item.status === "accepted" && (
+                  <div className="mt-5 flex justify-end border-t border-[#F0E5E1] pt-5">
+                    <button
+                      onClick={() => handleStatusChange(item._id, "completed")}
+                      disabled={updatingId === item._id}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                    >
+                      <Check size={17} />
+                      {updatingId === item._id
+                        ? "Updating..."
+                        : "Mark as Completed"}
+                    </button>
+                  </div>
+                )}
+
+                {item.status === "completed" && (
+                  <div className="mt-5 rounded-xl bg-blue-50 p-4 text-center text-sm font-medium text-blue-700">
+                    <Check size={17} className="mr-2 inline" />
+                    This service has been completed successfully.
                   </div>
                 )}
               </div>
