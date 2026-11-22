@@ -27,10 +27,11 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import {
-  getAdminServices,
   updateServiceStatus,
   deleteAdminService,
-} from "@/lib/actions/admin-services"
+} from "@/lib/actions/admin-services";
+
+import { getAdminServices } from "@/lib/actions/admin-services-api";
 
 type Service = {
   _id: string
