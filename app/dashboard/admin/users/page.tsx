@@ -1,6 +1,16 @@
 "use client"
-
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   Users,
   UserRound,
@@ -19,7 +29,7 @@ import {
   banUser,
   unbanUser,
   deleteUser,
-} from "@/lib/actions/users";
+} from "@/lib/actions/users"
 
 type UserRole = "admin" | "vendor" | "customer"
 
@@ -37,6 +47,7 @@ type User = {
 }
 
 export default function AdminUsersPage() {
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -90,20 +101,26 @@ export default function AdminUsersPage() {
     }
   }
 
-  const handleDelete = async (user: User) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to permanently delete ${user.name}?`
-    )
+  const handleDelete = async () => {
+    if (!deleteTarget) return
 
-    if (!confirmed) return
+    const user = deleteTarget
+    setUpdatingId(user._id)
 
-    const result = await deleteUser(user._id)
+    try {
+      const result = await deleteUser(user._id)
 
-    if (result.success) {
-      toast.success(result.message)
-      await loadUsers()
-    } else {
-      toast.error(result.message)
+      if (result.success) {
+        toast.success("User deleted successfully!")
+        setUsers((prev) => prev.filter((item) => item._id !== user._id))
+        setDeleteTarget(null)
+      } else {
+        toast.error(result.message || "Failed to delete user.")
+      }
+    } catch {
+      toast.error("Something went wrong while deleting the user.")
+    } finally {
+      setUpdatingId("")
     }
   }
 
@@ -339,6 +356,7 @@ export default function AdminUsersPage() {
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user._id} className="transition hover:bg-[#FFFCFB]">
+                    {/* User */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {user.image ? (
@@ -361,6 +379,7 @@ export default function AdminUsersPage() {
                             <Mail size={12} />
                             {user.email}
                           </p>
+
                           {user.businessName && (
                             <p className="mt-1 text-xs text-gray-400">
                               {user.businessName}
@@ -370,6 +389,7 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
 
+                    {/* Role */}
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold capitalize ${getRoleStyle(user.role)}`}
@@ -378,12 +398,14 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
 
+                    {/* Subscription */}
                     <td className="px-6 py-4">
                       <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 capitalize">
-                        {user.subscriptionPlan}
+                        {user.subscriptionPlan || "Free"}
                       </span>
                     </td>
 
+                    {/* Joined Date */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <CalendarDays size={15} />
@@ -392,39 +414,21 @@ export default function AdminUsersPage() {
                           : "N/A"}
                       </div>
                     </td>
-<td className="px-6 py-4">
-  <span
-    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-      user.isBanned
-        ? "bg-red-50 text-red-600"
-        : "bg-green-50 text-green-700"
-    }`}
-  >
-    {user.isBanned ? "Banned" : "Active"}
-  </span>
-</td>
 
-<td className="px-6 py-4">
-  <div className="flex items-center gap-2">
-    <button
-      onClick={() => handleBanToggle(user)}
-      className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-        user.isBanned
-          ? "bg-green-50 text-green-700 hover:bg-green-100"
-          : "bg-orange-50 text-orange-700 hover:bg-orange-100"
-      }`}
-    >
-      {user.isBanned ? "Unban" : "Ban"}
-    </button>
+                    {/* Account Status */}
+                    <td className="px-6 py-4">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          user.isBanned
+                            ? "bg-red-50 text-red-600"
+                            : "bg-green-50 text-green-700"
+                        }`}
+                      >
+                        {user.isBanned ? "Banned" : "Active"}
+                      </span>
+                    </td>
 
-    <button
-      onClick={() => handleDelete(user)}
-      className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-100"
-    >
-      Delete
-    </button>
-  </div>
-</td>
+                    {/* Manage Role */}
                     <td className="px-6 py-4">
                       <div className="relative flex items-center gap-2">
                         <select
@@ -451,6 +455,36 @@ export default function AdminUsersPage() {
                         )}
                       </div>
                     </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleBanToggle(user)}
+                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${
+                            user.isBanned
+                              ? "bg-green-50 text-green-700 hover:bg-green-100"
+                              : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                          }`}
+                        >
+                          {user.isBanned ? "Unban" : "Ban"}
+                        </button>
+
+                        <button
+                          onClick={() => setDeleteTarget(user)}
+                          disabled={updatingId === user._id}
+                          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                        <Link
+                          href={`/dashboard/admin/users/${user._id}`}
+                          className="rounded-lg bg-[#FFF1ED] px-3 py-2 text-xs font-semibold whitespace-nowrap text-[#A65D55] transition hover:bg-[#F8E3DD]"
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -465,6 +499,47 @@ export default function AdminUsersPage() {
           <p>WedNest Admin Panel</p>
         </div>
       </div>
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open && !updatingId) {
+            setDeleteTarget(null)
+          }
+        }}
+      >
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-gray-900">
+              Delete User?
+            </AlertDialogTitle>
+
+            <AlertDialogDescription className="text-sm text-gray-500">
+              Are you sure you want to permanently delete{" "}
+              <span className="font-semibold text-gray-900">
+                {deleteTarget?.name}
+              </span>
+              ? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!updatingId} className="rounded-xl">
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={!!updatingId}
+              className="rounded-xl bg-red-600 text-white hover:bg-red-700"
+            >
+              {updatingId === deleteTarget?._id ? "Deleting..." : "Delete User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

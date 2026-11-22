@@ -154,6 +154,7 @@ export default function VendorProfilePage() {
   const subscriptionDate = user.subscriptionExpiresAt
     ? new Date(user.subscriptionExpiresAt).toLocaleDateString()
     : "Not available";
+    
 
   return (
     <div className="mx-auto max-w-4xl space-y-7">

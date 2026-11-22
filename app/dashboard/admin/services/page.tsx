@@ -1,6 +1,6 @@
 
 "use client";
-
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -441,56 +441,58 @@ export default function AdminServicesPage() {
                       </span>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {service.status !== "approved" && (
-                        <button
-                          onClick={() =>
-                            handleStatusChange(
-                              service._id,
-                              "approved"
-                            )
-                          }
-                          disabled={updatingId === service._id}
-                          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
-                        >
-                          {updatingId === service._id ? (
-                            <LoaderCircle
-                              size={15}
-                              className="animate-spin"
-                            />
-                          ) : (
-                            <CheckCircle2 size={15} />
-                          )}
-                          Approve
-                        </button>
-                      )}
 
-                      {service.status !== "rejected" && (
-                        <button
-                          onClick={() =>
-                            handleStatusChange(
-                              service._id,
-                              "rejected"
-                            )
-                          }
-                          disabled={updatingId === service._id}
-                          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
-                        >
-                          <XCircle size={15} />
-                          Reject
-                        </button>
-                      )}
+{/* Actions */}
+<div className="space-y-2 pt-1">
+  <Link
+    href={`/service-details/${service._id}`}
+    className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#A65D55] bg-white px-3 py-2.5 text-sm font-semibold text-[#A65D55] transition hover:bg-[#FFF1ED]"
+  >
+    View Service Details
+  </Link>
 
-                      <button
-                        onClick={() => handleDelete(service._id)}
-                        disabled={updatingId === service._id}
-                        title="Delete service"
-                        className="flex items-center justify-center rounded-xl border border-[#F0E5E1] px-3 py-2.5 text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+  <div className="flex flex-wrap gap-2">
+    {service.status !== "approved" && (
+      <button
+        onClick={() =>
+          handleStatusChange(service._id, "approved")
+        }
+        disabled={updatingId === service._id}
+        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-green-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+      >
+        {updatingId === service._id ? (
+          <LoaderCircle size={15} className="animate-spin" />
+        ) : (
+          <CheckCircle2 size={15} />
+        )}
+        Approve
+      </button>
+    )}
+
+    {service.status !== "rejected" && (
+      <button
+        onClick={() =>
+          handleStatusChange(service._id, "rejected")
+        }
+        disabled={updatingId === service._id}
+        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+      >
+        <XCircle size={15} />
+        Reject
+      </button>
+    )}
+
+    <button
+      onClick={() => handleDelete(service._id)}
+      disabled={updatingId === service._id}
+      title="Delete service"
+      className="flex items-center justify-center rounded-xl border border-[#F0E5E1] px-3 py-2.5 text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+    >
+      <Trash2 size={16} />
+    </button>
+  </div>
+</div>
+
                   </div>
                 </div>
               ))}

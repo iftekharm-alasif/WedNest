@@ -319,7 +319,7 @@ const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
                 </p>
               ) : session.user.role !== "customer" ? (
                 <p className="mt-5 rounded-xl bg-[#F8EFED] p-4 text-sm text-gray-600">
-                  Only customers can book services. Vendors cannot book
+                  Only customers can book services. Admin/Vendors cannot book
                   services.
                 </p>
               ) : bookingCheckLoading ? (
