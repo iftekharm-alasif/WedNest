@@ -280,18 +280,37 @@ export const updateBookingStatus = async (
 };
 
 
+
 // Get Customer Bookings
-export const getCustomerBookings = async (customerId: string) => {
-  const res = await fetch(
-    `${BASE_URL}/customer-bookings?customerId=${customerId}`,
-  );
+export const getCustomerBookings = async () => {
+  try {
+    const { data } = await authClient.token();
 
-  if (!res.ok) {
-    throw new Error("Failed to load bookings");
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(`${BASE_URL}/customer-bookings`, {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    console.log("Customer Bookings API:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to load bookings");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Get Customer Bookings Error:", error);
+    throw error;
   }
-
-  return res.json();
 };
+
 
 // Cancel Customer Booking
 export const cancelCustomerBooking = async (

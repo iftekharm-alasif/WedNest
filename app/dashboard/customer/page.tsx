@@ -1,7 +1,7 @@
-
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { requireDashboardRole } from "@/lib/dashboard-auth";
-import { getCustomerBookings } from "@/lib/actions/services";
 import {
   Card,
   CardContent,
@@ -23,13 +23,35 @@ import {
 export default async function CustomerDashboard() {
   const session = await requireDashboardRole("customer");
 
-  let bookings = [];
+let bookings: { status: string }[] = [];
 
-  try {
-    bookings = await getCustomerBookings(session.user.id);
-  } catch (error) {
-    console.log("Failed to load customer bookings:", error);
+try {
+  const tokenData = await auth.api.getToken({
+    headers: await headers(),
+  });
+
+  if (!tokenData?.token) {
+    throw new Error("JWT token not found");
   }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"}/customer-bookings`,
+    {
+      headers: {
+        Authorization: `Bearer ${tokenData.token}`,
+      },
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to load customer bookings");
+  }
+
+  bookings = await response.json();
+} catch (error) {
+  console.log("Failed to load customer bookings:", error);
+}
 
   const totalBookings = bookings.length;
 
