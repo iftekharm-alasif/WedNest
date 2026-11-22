@@ -75,7 +75,7 @@ export default function ServiceDetailsPage() {
       try {
         setBookingCheckLoading(true)
 
-        const data = await getCustomerBooking(id, session.user.id)
+        const data = await getCustomerBooking(id)
         setExistingBooking(data)
       } catch (error) {
         console.log(error)

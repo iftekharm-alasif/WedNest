@@ -345,21 +345,38 @@ export const cancelCustomerBooking = async (id: string) => {
 };
 
 
+
 // Get Customer Booking
-export const getCustomerBooking = async (
-  serviceId: string,
-  customerId: string
-) => {
-  const res = await fetch(
-    `${BASE_URL}/customer-booking?serviceId=${serviceId}&customerId=${customerId}`
-  );
+export const getCustomerBooking = async (serviceId: string) => {
+  try {
+    const { data } = await authClient.token();
 
-  if (!res.ok) {
-    throw new Error("Failed to load booking");
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(
+      `${BASE_URL}/customer-booking?serviceId=${encodeURIComponent(serviceId)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+        },
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to load booking");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Get Customer Booking Error:", error);
+    throw error;
   }
-
-  return res.json();
 };
+
 
 
 
