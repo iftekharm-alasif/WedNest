@@ -32,3 +32,43 @@ console.log("Admin Services Response:", result);
     throw error;
   }
 };
+
+
+
+export const updateServiceStatus = async (
+  serviceId: string,
+  status: "approved" | "rejected"
+) => {
+  try {
+    const { data } = await authClient.token();
+
+    if (!data?.token) {
+      throw new Error("Please login first");
+    }
+
+    const res = await fetch(
+      `${BASE_URL}/admin/services/${serviceId}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.token}`,
+        },
+        body: JSON.stringify({ status }),
+      }
+    );
+
+    const result = await res.json();
+
+    console.log("Update Admin Service Status:", res.status, result);
+
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to update service status");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Update Admin Service Status Error:", error);
+    throw error;
+  }
+};
