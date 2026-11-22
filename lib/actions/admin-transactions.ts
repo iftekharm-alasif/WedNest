@@ -21,12 +21,18 @@ async function checkAdmin() {
   }
 
   const currentUser = await users.findOne(
-    { email: session.user.email },
-    { projection: { role: 1 } }
+    {
+      email: session.user.email,
+      role: "admin",
+      isBanned: { $ne: true },
+    },
+    {
+      projection: { _id: 1 },
+    }
   );
 
-  if (currentUser?.role !== "admin") {
-    throw new Error("Only admins can view transactions");
+  if (!currentUser) {
+    throw new Error("Only active admins can view transactions");
   }
 
   return session;
@@ -36,10 +42,26 @@ export async function getAdminTransactions() {
   try {
     await checkAdmin();
 
-    const data = await transactions
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray();
+const data = await transactions
+  .find(
+    {},
+    {
+      projection: {
+        vendorId: 1,
+        vendorName: 1,
+        vendorEmail: 1,
+        plan: 1,
+        amount: 1,
+        currency: 1,
+        status: 1,
+        stripeSessionId: 1,
+        stripeSubscriptionId: 1,
+        createdAt: 1,
+      },
+    }
+  )
+  .sort({ createdAt: -1 })
+  .toArray();
 
     console.log("Total transaction documents:", data.length);
 

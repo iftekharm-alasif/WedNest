@@ -128,55 +128,54 @@ const AddServicePage = () => {
     }
   }
 
-const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault()
-  setShowConfirmation(true)
-}
-
-
-const confirmSubmit = async () => {
-  if (images.length === 0) {
-    toast.error("Please upload at least one image")
-    setShowConfirmation(false)
-    return
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setShowConfirmation(true)
   }
 
-  try {
-    setLoading(true)
-
-    const serviceData = {
-      serviceName,
-      category,
-      description,
-      price,
-      location,
-      images,
-      vendorId: session?.user.id,
-      vendorName: session?.user.name,
-      vendorEmail: session?.user.email,
+  const confirmSubmit = async () => {
+    if (images.length === 0) {
+      toast.error("Please upload at least one image")
+      setShowConfirmation(false)
+      return
     }
 
-    const result = await createServices(serviceData)
+    try {
+      setLoading(true)
 
-    if (result.success) {
-      toast.success("Service submitted successfully!")
-      setImageUrl("")
-      setServiceName("")
-      setCategory("")
-      setDescription("")
-      setPrice("")
-      setLocation("")
-      setImages([])
-    } else {
-      toast.error(result.message || "Failed to submit service")
+      const serviceData = {
+        serviceName,
+        category,
+        description,
+        price,
+        location,
+        images,
+        vendorId: session?.user.id,
+        vendorName: session?.user.name,
+        vendorEmail: session?.user.email,
+      }
+
+      const result = await createServices(serviceData)
+
+      if (result.success) {
+        toast.success("Service submitted successfully!")
+        setImageUrl("")
+        setServiceName("")
+        setCategory("")
+        setDescription("")
+        setPrice("")
+        setLocation("")
+        setImages([])
+      } else {
+        toast.error(result.message || "Failed to submit service")
+      }
+    } catch {
+      toast.error("Something went wrong")
+    } finally {
+      setLoading(false)
+      setShowConfirmation(false)
     }
-  } catch {
-    toast.error("Something went wrong")
-  } finally {
-    setLoading(false)
-    setShowConfirmation(false)
   }
-}
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] px-4 py-8 md:px-8">
@@ -379,7 +378,7 @@ const confirmSubmit = async () => {
               <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
                 {images.map((image, index) => (
                   <div
-                    key={image}
+                    key={`${image}-${index}`}
                     className="group relative h-28 overflow-hidden rounded-xl border border-[#F0E5E1]"
                   >
                     <img
@@ -423,37 +422,32 @@ const confirmSubmit = async () => {
             </button>
           </div>
         </form>
-        <AlertDialog
-  open={showConfirmation}
-  onOpenChange={setShowConfirmation}
->
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>Submit Your Service?</AlertDialogTitle>
-      <AlertDialogDescription>
-        Are you sure you want to submit this service? It will be sent
-        to the admin for approval before appearing in Browse Services.
-      </AlertDialogDescription>
-    </AlertDialogHeader>
+        <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Submit Your Service?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to submit this service? It will be sent to
+                the admin for approval before appearing in Browse Services.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
 
-<AlertDialogFooter>
-  <AlertDialogCancel disabled={loading}>
-    Cancel
-  </AlertDialogCancel>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
 
-  <AlertDialogAction
-    onClick={(e) => {
-      e.preventDefault()
-      confirmSubmit()
-    }}
-    disabled={loading}
-    className="bg-[#A65D55] hover:bg-[#884840]"
-  >
-    {loading ? "Submitting..." : "Yes, Submit"}
-  </AlertDialogAction>
-</AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault()
+                  confirmSubmit()
+                }}
+                disabled={loading}
+                className="bg-[#A65D55] hover:bg-[#884840]"
+              >
+                {loading ? "Submitting..." : "Yes, Submit"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )
