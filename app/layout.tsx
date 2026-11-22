@@ -1,26 +1,25 @@
-
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
-import Navbar from "@/components/Navbar";
-import { Toaster } from "@/components/ui/sonner";
-import Footer from "@/components/Footer";
+import { Geist, Geist_Mono } from "next/font/google"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { cn } from "@/lib/utils"
+import Navbar from "@/components/Navbar"
+import { Toaster } from "@/components/ui/sonner"
+import Footer from "@/components/Footer"
 
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
-});
+})
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
-});
+})
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html
@@ -39,14 +38,12 @@ export default function RootLayout({
             <Navbar />
             <Toaster />
 
-            <div className="flex-1">
-              {children}
-            </div>
+            <div className="flex-1">{children}</div>
 
             <Footer />
           </div>
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

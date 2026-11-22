@@ -1,27 +1,28 @@
-
-import { betterAuth } from "better-auth";
-import { createAuthMiddleware, APIError } from "better-auth/api";
-import { MongoClient, ObjectId } from "mongodb";
-import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { jwt } from "better-auth/plugins";
-
+import { betterAuth } from "better-auth"
+import { createAuthMiddleware, APIError } from "better-auth/api"
+import { MongoClient, ObjectId } from "mongodb"
+import { mongodbAdapter } from "@better-auth/mongo-adapter"
+import { jwt } from "better-auth/plugins"
 
 declare global {
-  var _mongoClient: MongoClient | undefined;
+  var _mongoClient: MongoClient | undefined
 }
 
 const client =
-  globalThis._mongoClient ??
-  new MongoClient(process.env.MONGODB_URI as string);
+  globalThis._mongoClient ?? new MongoClient(process.env.MONGODB_URI as string)
 
 if (!globalThis._mongoClient) {
-  globalThis._mongoClient = client;
+  globalThis._mongoClient = client
 }
 
-const db = client.db("wednestdb");
+const db = client.db("wednestdb")
 
-export const users = db.collection("user");
-
+export const users = db.collection<{
+  _id: string | ObjectId
+  email?: string
+  isBanned?: boolean
+  role?: string
+}>("user")
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -34,47 +35,50 @@ export const auth = betterAuth({
     enabled: true,
   },
 
-user: {
-  additionalFields: {
-    role: {
-      type: "string",
-      required: true,
-      input: true,
-    },
-    businessName: {
-      type: "string",
-      required: false,
-      input: false,
-    },
-    subscriptionPlan: {
-      type: "string",
-      required: false,
-      input: false,
-    },
-    subscriptionExpiresAt: {
-      type: "date",
-      required: false,
-      input: false,
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: true,
+        input: true,
+      },
+      businessName: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      subscriptionPlan: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      subscriptionExpiresAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
     },
   },
-},
 
   // Block banned users during email/password login
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/sign-in/email") {
-        const body = ctx.body as { email?: string } | undefined;
-        const email = body?.email?.trim();
+        const body = ctx.body as { email?: string } | undefined
+        const email = body?.email?.trim()
 
         if (email) {
           const user = await users.findOne({
-            email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
-          });
+            email: {
+              $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+              $options: "i",
+            },
+          })
 
           if (user?.isBanned === true) {
             throw new APIError("FORBIDDEN", {
               message: "Your account has been banned. Please contact support.",
-            });
+            })
           }
         }
       }
@@ -86,26 +90,23 @@ user: {
     session: {
       create: {
         before: async (session) => {
-          const userId = session.userId;
+          const userId = session.userId
 
           const userFilter = ObjectId.isValid(userId)
             ? {
-                $or: [
-                  { _id: userId },
-                  { _id: new ObjectId(userId) },
-                ],
+                $or: [{ _id: userId }, { _id: new ObjectId(userId) }],
               }
-            : { _id: userId };
+            : { _id: userId }
 
-          const user = await users.findOne(userFilter);
+          const user = await users.findOne(userFilter)
 
           if (user?.isBanned === true) {
-            return false;
+            return false
           }
 
           return {
             data: session,
-          };
+          }
         },
       },
     },
@@ -117,7 +118,5 @@ user: {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-    plugins: [
-    jwt(),
-  ],
-});
+  plugins: [jwt()],
+})

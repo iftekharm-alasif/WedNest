@@ -24,6 +24,7 @@ type Service = {
   price: number;
   status: string;
   isActive: boolean;
+  vendorId: string;
   createdAt?: string;
 };
 

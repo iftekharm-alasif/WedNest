@@ -24,7 +24,8 @@ const Navbar = () => {
 
   const { data: session, isPending } = authClient.useSession()
 
-  const userRole = session?.user?.role || "customer"
+  const userRole =
+    (session?.user as { role?: string } | undefined)?.role || "customer"
 
   const dashboardPath =
     userRole === "admin"
@@ -58,7 +59,7 @@ const Navbar = () => {
     }
   }
 
-  const isActive = (href) => {
+  const isActive = (href: string) => {
     if (href === "/") return pathname === "/"
     return pathname.startsWith(href)
   }

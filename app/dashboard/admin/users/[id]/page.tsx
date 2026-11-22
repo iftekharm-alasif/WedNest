@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -70,10 +69,7 @@ export default function AdminUserDetailsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <LoaderCircle
-          size={32}
-          className="animate-spin text-[#A65D55]"
-        />
+        <LoaderCircle size={32} className="animate-spin text-[#A65D55]" />
       </div>
     )
   }
@@ -179,16 +175,12 @@ export default function AdminUserDetailsPage() {
           )}
 
           <div className="text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {user.name}
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
 
-            <p className="mt-1 text-sm text-gray-500">
-              {user.email}
-            </p>
+            <p className="mt-1 text-sm text-gray-500">{user.email}</p>
 
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-              <span className="rounded-full border border-[#F0E5E1] bg-[#FFF1ED] px-3 py-1 text-xs font-semibold capitalize text-[#A65D55]">
+              <span className="rounded-full border border-[#F0E5E1] bg-[#FFF1ED] px-3 py-1 text-xs font-semibold text-[#A65D55] capitalize">
                 {user.role}
               </span>
 
@@ -226,7 +218,7 @@ export default function AdminUserDetailsPage() {
                   {item.label}
                 </div>
 
-                <p className="mt-2 break-all text-sm font-semibold capitalize text-gray-900">
+                <p className="mt-2 text-sm font-semibold break-all text-gray-900 capitalize">
                   {item.value}
                 </p>
               </div>

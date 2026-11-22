@@ -1,14 +1,13 @@
-
-import Link from "next/link";
-import { MongoClient } from "mongodb";
-import { requireDashboardRole } from "@/lib/dashboard-auth";
+import Link from "next/link"
+import { MongoClient } from "mongodb"
+import { requireDashboardRole } from "@/lib/dashboard-auth"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 import {
   Users,
   BriefcaseBusiness,
@@ -17,44 +16,43 @@ import {
   ArrowUpRight,
   ShieldCheck,
   LayoutDashboard,
-} from "lucide-react";
+} from "lucide-react"
 
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
 
-const client = new MongoClient(process.env.MONGODB_URI as string);
-const db = client.db("wednestdb");
+const client = new MongoClient(process.env.MONGODB_URI as string)
+const db = client.db("wednestdb")
 
 export default async function AdminDashboard() {
-  const session = await requireDashboardRole("admin");
+  const session = await requireDashboardRole("admin")
 
   let stats = {
     users: 0,
     services: 0,
     bookings: 0,
     transactions: 0,
-  };
+  }
 
-  let statsAvailable = true;
+  let statsAvailable = true
 
   try {
-    const [users, services, bookings, transactions] =
-      await Promise.all([
-        db.collection("user").countDocuments(),
-        db.collection("services").countDocuments(),
-        db.collection("bookings").countDocuments(),
-        db.collection("transactions").countDocuments(),
-      ]);
+    const [users, services, bookings, transactions] = await Promise.all([
+      db.collection("user").countDocuments(),
+      db.collection("services").countDocuments(),
+      db.collection("bookings").countDocuments(),
+      db.collection("transactions").countDocuments(),
+    ])
 
     stats = {
       users,
       services,
       bookings,
       transactions,
-    };
+    }
   } catch (error) {
-    console.error("Admin Statistics Error:", error);
-    statsAvailable = false;
+    console.error("Admin Statistics Error:", error)
+    statsAvailable = false
   }
 
   const statCards = [
@@ -86,34 +84,31 @@ export default async function AdminDashboard() {
       description: "Recorded payment transactions",
       color: "bg-orange-50 text-orange-600",
     },
-  ];
+  ]
 
   const managementCards = [
     {
       title: "Manage Users",
-      description:
-        "Manage customer and vendor accounts and their roles.",
+      description: "Manage customer and vendor accounts and their roles.",
       href: "/dashboard/admin/users",
       icon: Users,
       action: "View Users",
     },
     {
       title: "Manage Services",
-      description:
-        "Review, monitor and manage vendor service listings.",
+      description: "Review, monitor and manage vendor service listings.",
       href: "/dashboard/admin/services",
       icon: BriefcaseBusiness,
       action: "View Services",
     },
     {
       title: "Transactions",
-      description:
-        "Monitor vendor subscription payments and transactions.",
+      description: "Monitor vendor subscription payments and transactions.",
       href: "/dashboard/admin/transactions",
       icon: CreditCard,
       action: "View Transactions",
     },
-  ];
+  ]
 
   return (
     <div className="space-y-8">
@@ -154,7 +149,7 @@ export default async function AdminDashboard() {
 
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {statCards.map((item) => {
-            const Icon = item.icon;
+            const Icon = item.icon
 
             return (
               <Card
@@ -169,10 +164,7 @@ export default async function AdminDashboard() {
                       <Icon size={24} />
                     </div>
 
-                    <ArrowUpRight
-                      size={19}
-                      className="text-gray-400"
-                    />
+                    <ArrowUpRight size={19} className="text-gray-400" />
                   </div>
 
                   <p className="mt-5 text-sm font-medium text-gray-500">
@@ -180,9 +172,7 @@ export default async function AdminDashboard() {
                   </p>
 
                   <h3 className="mt-1 text-3xl font-bold text-gray-800">
-                    {statsAvailable
-                      ? item.value.toLocaleString()
-                      : "—"}
+                    {statsAvailable ? item.value.toLocaleString() : "—"}
                   </h3>
 
                   <p className="mt-2 text-xs text-gray-400">
@@ -190,14 +180,14 @@ export default async function AdminDashboard() {
                   </p>
                 </CardContent>
               </Card>
-            );
+            )
           })}
         </div>
 
         {!statsAvailable && (
           <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-            Unable to load platform statistics. Please check your
-            database connection.
+            Unable to load platform statistics. Please check your database
+            connection.
           </p>
         )}
       </section>
@@ -215,7 +205,7 @@ export default async function AdminDashboard() {
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {managementCards.map((item) => {
-            const Icon = item.icon;
+            const Icon = item.icon
 
             return (
               <Link href={item.href} key={item.title}>
@@ -242,7 +232,7 @@ export default async function AdminDashboard() {
                   </CardContent>
                 </Card>
               </Link>
-            );
+            )
           })}
         </div>
       </section>
@@ -256,9 +246,7 @@ export default async function AdminDashboard() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-800">
-                Admin Access
-              </h3>
+              <h3 className="font-semibold text-gray-800">Admin Access</h3>
               <p className="text-sm text-gray-500">
                 You are managing WedNest as an administrator.
               </p>
@@ -271,5 +259,5 @@ export default async function AdminDashboard() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

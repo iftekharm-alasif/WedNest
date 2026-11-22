@@ -1,14 +1,12 @@
+"use client"
 
-"use client";
-
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Heart } from "lucide-react";
+import Link from "next/link"
+import { motion } from "framer-motion"
+import { ArrowRight, Heart } from "lucide-react"
 
 const HeroSection = () => {
   return (
     <section className="relative flex min-h-[650px] items-center overflow-hidden bg-[#F9F3EF] md:min-h-[750px]">
-
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -23,7 +21,6 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-24 md:px-10">
-
         <motion.div
           initial={{ opacity: 0, y: 35 }}
           animate={{ opacity: 1, y: 0 }}
@@ -37,9 +34,9 @@ const HeroSection = () => {
           </div>
 
           {/* Heading */}
-          <h1 className="text-4xl font-bold leading-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+          <h1 className="text-4xl leading-tight font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
             Make Your Dream Wedding
-            <span className="mt-2 block font-serif italic font-normal text-[#F2C9BC]">
+            <span className="mt-2 block font-serif font-normal text-[#F2C9BC] italic">
               A Beautiful Reality
             </span>
           </h1>
@@ -47,13 +44,12 @@ const HeroSection = () => {
           {/* Description */}
           <p className="mt-7 max-w-xl text-base leading-8 text-white/90 md:text-lg">
             Discover trusted wedding professionals, explore beautiful venues,
-            and find everything you need to create your perfect wedding day
-            — all in one place.
+            and find everything you need to create your perfect wedding day —
+            all in one place.
           </p>
 
           {/* Buttons */}
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-
             <Link
               href="/browse-services"
               className="group inline-flex items-center justify-center gap-3 rounded-lg bg-[#A65D55] px-7 py-4 font-semibold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-[#884840]"
@@ -71,7 +67,6 @@ const HeroSection = () => {
             >
               Get Started
             </Link>
-
           </div>
 
           {/* Bottom Text */}
@@ -79,11 +74,10 @@ const HeroSection = () => {
             <span>♡ Trusted Wedding Vendors</span>
             <span>✦ Personalized Planning</span>
           </div>
-
         </motion.div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default HeroSection;
+export default HeroSection

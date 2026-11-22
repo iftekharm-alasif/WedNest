@@ -1,10 +1,9 @@
+"use client"
 
-"use client";
-
-import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import React, { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { authClient } from "@/lib/auth-client"
 import {
   UserRound,
   Store,
@@ -13,84 +12,73 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-} from "lucide-react";
+} from "lucide-react"
 
 const SignInPage = () => {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [role, setRole] = useState("customer");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [role, setRole] = useState("customer")
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
+    const form = e.currentTarget
 
-const handleSignIn = async (e) => {
-  e.preventDefault();
+    try {
+      setLoading(true)
+      setError("")
 
-  const form = e.target;
+      const { data, error } = await authClient.signIn.email({
+        email: form.email.value.trim(),
+        password: form.password.value,
+      })
 
-  try {
-    setLoading(true);
-    setError("");
-
-    const { data, error } = await authClient.signIn.email({
-      email: form.email.value.trim(),
-      password: form.password.value,
-    });
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    // Get actual role from the logged-in session
-    const session = await authClient.getSession({
-      query: {
-        disableCookieCache: true,
-      },
-    });
-
-    const actualRole = (
-      session.data?.user as typeof session.data.user & {
-        role?: string;
+      if (error) {
+        setError(error.message || "Login failed. Please try again.")
+        return
       }
-    )?.role;
 
-    if (!actualRole) {
-      await authClient.signOut();
-      setError("Unable to verify your account role. Please try again.");
-      return;
+      const session = await authClient.getSession({
+        query: {
+          disableCookieCache: true,
+        },
+      })
+
+      const actualRole = (session.data?.user as { role?: string } | null)?.role
+
+      if (!actualRole) {
+        await authClient.signOut()
+        setError("Unable to verify your account role. Please try again.")
+        return
+      }
+
+      if (actualRole !== "admin" && actualRole !== role) {
+        await authClient.signOut()
+
+        setError(
+          `This account is registered as ${actualRole}. Please select ${actualRole} to sign in.`
+        )
+        return
+      }
+
+      router.replace("/dashboard")
+      router.refresh()
+    } catch (err) {
+      console.error("Login error:", err)
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
     }
-
-// Admin can sign in using either Customer or Vendor option
-if (actualRole !== "admin" && actualRole !== role) {
-  await authClient.signOut();
-
-  setError(
-    `This account is registered as ${actualRole}. Please select ${actualRole} to sign in.`
-  );
-  return;
-}
-
-    router.replace("/dashboard");
-    router.refresh();
-
-  } catch (err) {
-    console.error("Login error:", err);
-    setError("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
   }
-};
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#FAF7F5] px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border border-[#F0E5E1] bg-white p-7 shadow-lg sm:p-9">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-[#A65D55]">
-            Welcome Back
-          </h1>
+          <h1 className="text-3xl font-bold text-[#A65D55]">Welcome Back</h1>
           <p className="mt-2 text-sm text-gray-500">
             Sign in to continue your WedNest journey
           </p>
@@ -113,10 +101,7 @@ if (actualRole !== "admin" && actualRole !== role) {
                 }`}
               >
                 {role === "customer" && (
-                  <CheckCircle2
-                    size={17}
-                    className="absolute right-2 top-2"
-                  />
+                  <CheckCircle2 size={17} className="absolute top-2 right-2" />
                 )}
                 <UserRound className="mx-auto mb-2" size={25} />
                 <span className="font-semibold">Customer</span>
@@ -132,10 +117,7 @@ if (actualRole !== "admin" && actualRole !== role) {
                 }`}
               >
                 {role === "vendor" && (
-                  <CheckCircle2
-                    size={17}
-                    className="absolute right-2 top-2"
-                  />
+                  <CheckCircle2 size={17} className="absolute top-2 right-2" />
                 )}
                 <Store className="mx-auto mb-2" size={25} />
                 <span className="font-semibold">Vendor</span>
@@ -180,21 +162,14 @@ if (actualRole !== "admin" && actualRole !== role) {
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-gray-400"
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-gray-600">
-              <input
-                type="checkbox"
-                className="accent-[#A65D55]"
-              />
+              <input type="checkbox" className="accent-[#A65D55]" />
               Remember me
             </label>
 
@@ -234,7 +209,7 @@ if (actualRole !== "admin" && actualRole !== role) {
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SignInPage;
+export default SignInPage

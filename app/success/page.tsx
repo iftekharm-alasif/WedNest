@@ -1,91 +1,88 @@
+import Link from "next/link"
+import { CheckCircle2, XCircle } from "lucide-react"
+import { MongoClient, ObjectId } from "mongodb"
+import { stripe } from "@/lib/stripe"
 
-import Link from "next/link";
-import { CheckCircle2, XCircle } from "lucide-react";
-import { MongoClient, ObjectId } from "mongodb";
-import { stripe } from "@/lib/stripe";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 export default async function Success({
   searchParams,
 }: {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string }>
 }) {
-  const { session_id } = await searchParams;
+  const { session_id } = await searchParams
 
-  let paymentCompleted = false;
-  const client = new MongoClient(process.env.MONGODB_URI as string);
+  let paymentCompleted = false
+  const client = new MongoClient(process.env.MONGODB_URI as string)
 
   try {
     if (!session_id) {
-      throw new Error("Missing session ID");
+      throw new Error("Missing session ID")
     }
 
     // Verify Stripe checkout session
-    const checkoutSession =
-      await stripe.checkout.sessions.retrieve(session_id);
+    const checkoutSession = await stripe.checkout.sessions.retrieve(session_id)
 
     if (
       checkoutSession.status !== "complete" ||
       checkoutSession.payment_status !== "paid" ||
       checkoutSession.mode !== "subscription"
     ) {
-      throw new Error("Payment not completed");
+      throw new Error("Payment not completed")
     }
 
-    const vendorId = checkoutSession.metadata?.vendorId;
+    const vendorId = checkoutSession.metadata?.vendorId
 
     if (!vendorId || !ObjectId.isValid(vendorId)) {
-      throw new Error("Invalid vendor ID");
+      throw new Error("Invalid vendor ID")
     }
 
     const subscriptionId =
       typeof checkoutSession.subscription === "string"
         ? checkoutSession.subscription
-        : checkoutSession.subscription?.id;
+        : checkoutSession.subscription?.id
 
     if (!subscriptionId) {
-      throw new Error("Subscription ID missing");
+      throw new Error("Subscription ID missing")
     }
 
     // Verify subscription
-    const subscription =
-      await stripe.subscriptions.retrieve(subscriptionId);
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
     if (
       subscription.status !== "active" &&
       subscription.status !== "trialing"
     ) {
-      throw new Error("Subscription is not active");
+      throw new Error("Subscription is not active")
     }
 
     const timestamps = subscription.items.data
       .map((item) => Number(item.current_period_end))
-      .filter((timestamp) => Number.isFinite(timestamp) && timestamp > 0);
+      .filter((timestamp) => Number.isFinite(timestamp) && timestamp > 0)
 
     if (timestamps.length === 0) {
-      throw new Error("Subscription expiry not found");
+      throw new Error("Subscription expiry not found")
     }
 
-    const expiryDate = new Date(Math.max(...timestamps) * 1000);
+    const expiryDate = new Date(Math.max(...timestamps) * 1000)
 
     // Connect MongoDB
-    await client.connect();
+    await client.connect()
 
-    const db = client.db("wednestdb");
-    const users = db.collection("user");
-    const transactions = db.collection("transactions");
+    const db = client.db("wednestdb")
+    const users = db.collection("user")
+    const transactions = db.collection("transactions")
 
-    const vendorObjectId = new ObjectId(vendorId);
+    const vendorObjectId = new ObjectId(vendorId)
 
     const vendor = await users.findOne({
       _id: vendorObjectId,
       role: "vendor",
-    });
+    })
 
     if (!vendor) {
-      throw new Error("Vendor not found");
+      throw new Error("Vendor not found")
     }
 
     // Activate Premium
@@ -101,10 +98,10 @@ export default async function Success({
           stripeSubscriptionId: subscription.id,
         },
       }
-    );
+    )
 
     if (result.matchedCount === 0) {
-      throw new Error("Vendor update failed");
+      throw new Error("Vendor update failed")
     }
 
     // Save transaction (prevents duplicate records)
@@ -130,20 +127,20 @@ export default async function Success({
         },
       },
       { upsert: true }
-    );
+    )
 
-    console.log("Transaction saved:", checkoutSession.id);
-    console.log("PREMIUM ACTIVATED:", vendorId);
+    console.log("Transaction saved:", checkoutSession.id)
+    console.log("PREMIUM ACTIVATED:", vendorId)
 
-    paymentCompleted = true;
+    paymentCompleted = true
   } catch (error) {
-    console.error("Payment verification error:", error);
+    console.error("Payment verification error:", error)
   } finally {
-    await client.close();
+    await client.close()
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAF7F5] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#FAF7F5] px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-10 text-center shadow-lg">
         {paymentCompleted ? (
           <>
@@ -175,5 +172,5 @@ export default async function Success({
         </Link>
       </div>
     </div>
-  );
+  )
 }

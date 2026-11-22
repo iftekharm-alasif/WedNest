@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -33,14 +32,16 @@ export default function VendorBookingsPage() {
   useEffect(() => {
     if (isPending) return
 
-    if (!session?.user?.id) {
-      setLoading(false)
-      return
-    }
+if (!session?.user?.id) {
+  queueMicrotask(() => {
+    setLoading(false)
+  })
+  return
+}
 
     const loadBookings = async () => {
       try {
-        const data = await getVendorBookings(session.user.id)
+        const data = await getVendorBookings()
         setBookings(data)
       } catch (error) {
         console.log(error)
@@ -68,9 +69,7 @@ export default function VendorBookingsPage() {
       }
 
       setBookings((previous) =>
-        previous.map((item) =>
-          item._id === id ? { ...item, status } : item
-        )
+        previous.map((item) => (item._id === id ? { ...item, status } : item))
       )
 
       if (status === "completed") {
@@ -127,7 +126,10 @@ export default function VendorBookingsPage() {
     )
   }
 
-  if (session.user.role !== "vendor") {
+  const userRole = (session.user as typeof session.user & { role?: string })
+    .role
+
+  if (userRole !== "vendor") {
     return (
       <div className="py-20 text-center text-gray-500">
         Only vendors can access this page.

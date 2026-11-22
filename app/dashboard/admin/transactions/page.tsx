@@ -291,7 +291,6 @@ export default function AdminTransactionsPage() {
             <Wallet size={18} />
             Completed Payment Amount
           </div>
-
           <div className="mt-3 space-y-1">
             {revenueByCurrency.length > 0 ? (
               revenueByCurrency.map(([currency, amount]) => (

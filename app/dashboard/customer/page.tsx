@@ -1,14 +1,14 @@
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import Link from "next/link";
-import { requireDashboardRole } from "@/lib/dashboard-auth";
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
+import Link from "next/link"
+import { requireDashboardRole } from "@/lib/dashboard-auth"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 import {
   CalendarDays,
   Clock,
@@ -18,54 +18,54 @@ import {
   Search,
   UserRound,
   ClipboardList,
-} from "lucide-react";
+} from "lucide-react"
 
 export default async function CustomerDashboard() {
-  const session = await requireDashboardRole("customer");
+  const session = await requireDashboardRole("customer")
 
-let bookings: { status: string }[] = [];
+  let bookings: { status: string }[] = []
 
-try {
-  const tokenData = await auth.api.getToken({
-    headers: await headers(),
-  });
+  try {
+    const tokenData = await auth.api.getToken({
+      headers: await headers(),
+    })
 
-  if (!tokenData?.token) {
-    throw new Error("JWT token not found");
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"}/customer-bookings`,
-    {
-      headers: {
-        Authorization: `Bearer ${tokenData.token}`,
-      },
-      cache: "no-store",
+    if (!tokenData?.token) {
+      throw new Error("JWT token not found")
     }
-  );
 
-  if (!response.ok) {
-    throw new Error("Failed to load customer bookings");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"}/customer-bookings`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokenData.token}`,
+        },
+        cache: "no-store",
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error("Failed to load customer bookings")
+    }
+
+    bookings = await response.json()
+  } catch (error) {
+    console.log("Failed to load customer bookings:", error)
   }
 
-  bookings = await response.json();
-} catch (error) {
-  console.log("Failed to load customer bookings:", error);
-}
-
-  const totalBookings = bookings.length;
+  const totalBookings = bookings.length
 
   const pendingBookings = bookings.filter(
     (item: { status: string }) => item.status === "pending"
-  ).length;
+  ).length
 
   const acceptedBookings = bookings.filter(
     (item: { status: string }) => item.status === "accepted"
-  ).length;
+  ).length
 
   const completedBookings = bookings.filter(
     (item: { status: string }) => item.status === "completed"
-  ).length;
+  ).length
 
   return (
     <div className="space-y-8">
@@ -81,8 +81,8 @@ try {
           </h1>
 
           <p className="mt-3 text-sm leading-7 text-white/90 sm:text-base">
-            Your dream wedding starts here. Explore trusted vendors,
-            manage your bookings, and make every moment special.
+            Your dream wedding starts here. Explore trusted vendors, manage your
+            bookings, and make every moment special.
           </p>
 
           <Link
@@ -98,9 +98,7 @@ try {
       {/* Booking Statistics */}
       <div>
         <div className="mb-5">
-          <h2 className="text-xl font-bold text-gray-800">
-            Booking Overview
-          </h2>
+          <h2 className="text-xl font-bold text-gray-800">Booking Overview</h2>
           <p className="mt-1 text-sm text-gray-500">
             Keep track of your wedding service bookings.
           </p>
@@ -168,9 +166,7 @@ try {
       {/* Quick Actions */}
       <div>
         <div className="mb-5">
-          <h2 className="text-xl font-bold text-gray-800">
-            Quick Actions
-          </h2>
+          <h2 className="text-xl font-bold text-gray-800">Quick Actions</h2>
           <p className="mt-1 text-sm text-gray-500">
             Everything you need to plan your special day.
           </p>
@@ -185,8 +181,8 @@ try {
                 </div>
                 <CardTitle>My Bookings</CardTitle>
                 <CardDescription>
-                  View your booking history, check request status,
-                  and manage your wedding service bookings.
+                  View your booking history, check request status, and manage
+                  your wedding service bookings.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center gap-2 font-semibold text-[#A65D55]">
@@ -203,8 +199,8 @@ try {
                 </div>
                 <CardTitle>Explore Services</CardTitle>
                 <CardDescription>
-                  Discover photographers, decorators, venues,
-                  catering services, and more.
+                  Discover photographers, decorators, venues, catering services,
+                  and more.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center gap-2 font-semibold text-[#A65D55]">
@@ -221,8 +217,8 @@ try {
                 </div>
                 <CardTitle>Profile Settings</CardTitle>
                 <CardDescription>
-                  Update your account information and manage
-                  your personal details.
+                  Update your account information and manage your personal
+                  details.
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex items-center gap-2 font-semibold text-[#A65D55]">
@@ -238,13 +234,13 @@ try {
               </div>
               <CardTitle>Make Your Day Special</CardTitle>
               <CardDescription>
-                Find the right wedding professionals and bring
-                your dream celebration to life with WedNest.
+                Find the right wedding professionals and bring your dream
+                celebration to life with WedNest.
               </CardDescription>
             </CardHeader>
           </Card>
         </div>
       </div>
     </div>
-  );
+  )
 }

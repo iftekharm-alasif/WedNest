@@ -1,13 +1,11 @@
-import HeroSection from "@/components/HeroSection";
-
+import HeroSection from "@/components/HeroSection"
 
 export default function Page() {
   return (
     <div>
-  <main>
-    <HeroSection></HeroSection>
-  </main>
-     
+      <main>
+        <HeroSection></HeroSection>
+      </main>
     </div>
   )
 }

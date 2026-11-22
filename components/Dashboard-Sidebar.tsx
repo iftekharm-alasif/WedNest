@@ -1,8 +1,7 @@
+"use client"
 
-"use client";
-
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Users,
@@ -15,10 +14,10 @@ import {
   ClipboardList,
   Heart,
   ChevronRight,
-} from "lucide-react";
+} from "lucide-react"
 
-import { authClient } from "@/lib/auth-client";
-import { DashboardRole } from "@/lib/dashboard-auth";
+import { authClient } from "@/lib/auth-client"
+import { DashboardRole } from "@/lib/dashboard-auth"
 
 import {
   Sidebar,
@@ -31,50 +30,86 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar"
 
 const menus = {
   admin: [
     { title: "Overview", url: "/dashboard/admin", icon: LayoutDashboard },
     { title: "Manage Users", url: "/dashboard/admin/users", icon: Users },
-    { title: "Manage Services", url: "/dashboard/admin/services", icon: Briefcase },
-    { title: "Transactions", url: "/dashboard/admin/transactions", icon: CreditCard },
+    {
+      title: "Manage Services",
+      url: "/dashboard/admin/services",
+      icon: Briefcase,
+    },
+    {
+      title: "Transactions",
+      url: "/dashboard/admin/transactions",
+      icon: CreditCard,
+    },
   ],
 
   vendor: [
     { title: "Overview", url: "/dashboard/vendor", icon: LayoutDashboard },
-    { title: "My Services", url: "/dashboard/vendor/services", icon: Briefcase },
-    { title: "Add Service", url: "/dashboard/vendor/add-service", icon: PlusCircle },
-    { title: "Booking Requests", url: "/dashboard/vendor/bookings", icon: CalendarDays },
-    { title: "Subscription", url: "/dashboard/vendor/subscription", icon: CreditCard },
-    { title: "Profile Settings", url: "/dashboard/vendor/profile", icon: Settings },
+    {
+      title: "My Services",
+      url: "/dashboard/vendor/services",
+      icon: Briefcase,
+    },
+    {
+      title: "Add Service",
+      url: "/dashboard/vendor/add-service",
+      icon: PlusCircle,
+    },
+    {
+      title: "Booking Requests",
+      url: "/dashboard/vendor/bookings",
+      icon: CalendarDays,
+    },
+    {
+      title: "Subscription",
+      url: "/dashboard/vendor/subscription",
+      icon: CreditCard,
+    },
+    {
+      title: "Profile Settings",
+      url: "/dashboard/vendor/profile",
+      icon: Settings,
+    },
   ],
 
   customer: [
     { title: "Overview", url: "/dashboard/customer", icon: LayoutDashboard },
-    { title: "My Bookings", url: "/dashboard/customer/bookings", icon: ClipboardList },
-    { title: "Profile Settings", url: "/dashboard/customer/profile", icon: Settings },
+    {
+      title: "My Bookings",
+      url: "/dashboard/customer/bookings",
+      icon: ClipboardList,
+    },
+    {
+      title: "Profile Settings",
+      url: "/dashboard/customer/profile",
+      icon: Settings,
+    },
   ],
-};
+}
 
 type Props = {
-  role: DashboardRole;
-  userName: string;
-};
+  role: DashboardRole
+  userName: string
+}
 
 export default function DashboardSidebar({ role, userName }: Props) {
-  const pathname = usePathname();
-  const router = useRouter();
+  const pathname = usePathname()
+  const router = useRouter()
 
-  const { data: session } = authClient.useSession();
+  const { data: session } = authClient.useSession()
 
-  const profileImage = session?.user?.image || "";
+  const profileImage = session?.user?.image || ""
 
   const handleLogout = async () => {
-    await authClient.signOut();
-    router.push("/signin");
-    router.refresh();
-  };
+    await authClient.signOut()
+    router.push("/signin")
+    router.refresh()
+  }
 
   return (
     <Sidebar className="border-r border-[#F0E5E1] bg-white">
@@ -97,18 +132,18 @@ export default function DashboardSidebar({ role, userName }: Props) {
 
       <SidebarContent className="px-3 py-6">
         <SidebarGroup>
-          <SidebarGroupLabel className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+          <SidebarGroupLabel className="mb-4 px-3 text-[10px] font-bold tracking-[0.18em] text-gray-400 uppercase">
             {role} Workspace
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {menus[role].map((item) => {
-                const Icon = item.icon;
+                const Icon = item.icon
                 const isActive =
                   pathname === item.url ||
                   (item.url !== `/dashboard/${role}` &&
-                    pathname.startsWith(`${item.url}/`));
+                    pathname.startsWith(`${item.url}/`))
 
                 return (
                   <SidebarMenuItem key={item.url}>
@@ -134,7 +169,7 @@ export default function DashboardSidebar({ role, userName }: Props) {
                       )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                );
+                )
               })}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -159,7 +194,7 @@ export default function DashboardSidebar({ role, userName }: Props) {
             <p className="truncate text-sm font-semibold text-gray-800">
               {userName}
             </p>
-            <p className="mt-0.5 text-xs capitalize text-[#A65D55]">
+            <p className="mt-0.5 text-xs text-[#A65D55] capitalize">
               {role} account
             </p>
           </div>
@@ -182,5 +217,5 @@ export default function DashboardSidebar({ role, userName }: Props) {
         </p>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

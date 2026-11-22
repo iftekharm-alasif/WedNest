@@ -1,10 +1,9 @@
+"use client"
 
-"use client";
-
-import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import React, { useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { authClient } from "@/lib/auth-client"
 import {
   UserRound,
   Store,
@@ -14,58 +13,57 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-} from "lucide-react";
+} from "lucide-react"
 
 const SignUpPage = () => {
-  const router = useRouter();
+  const router = useRouter()
 
-  const [role, setRole] = useState("customer");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [role, setRole] = useState("customer")
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSignUp = async (e) => {
-    e.preventDefault();
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
-    const form = e.target;
+    const form = e.currentTarget
+
+    const formData = new FormData(form)
 
     const userData = {
-      name: form.name.value.trim(),
-      email: form.email.value.trim(),
-      password: form.password.value,
+      name: String(formData.get("name") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      password: String(formData.get("password") || ""),
       role: role,
-    };
-
+    }
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true)
+      setError("")
 
-      const { data, error } = await authClient.signUp.email(userData);
+      const { data, error } = await authClient.signUp.email(userData)
 
       if (error) {
-        setError(error.message);
-        return;
+        setError(error.message || "Registration failed. Please try again.")
+        return
       }
 
-      console.log("Registration successful:", data);
+      console.log("Registration successful:", data)
 
-      router.push("/dashboard");
-      router.refresh();
+      router.push("/dashboard")
+      router.refresh()
     } catch (err) {
-      console.error("Signup error:", err);
-      setError("Something went wrong. Please try again.");
+      console.error("Signup error:", err)
+      setError("Something went wrong. Please try again.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#FAF7F5] px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border border-[#F0E5E1] bg-white p-7 shadow-lg sm:p-9">
         <div className="mb-7 text-center">
-          <h1 className="text-3xl font-bold text-[#A65D55]">
-            Create Account
-          </h1>
+          <h1 className="text-3xl font-bold text-[#A65D55]">Create Account</h1>
           <p className="mt-2 text-sm text-gray-500">
             Join WedNest and start planning something beautiful
           </p>
@@ -88,10 +86,7 @@ const SignUpPage = () => {
                 }`}
               >
                 {role === "customer" && (
-                  <CheckCircle2
-                    size={17}
-                    className="absolute top-2 right-2"
-                  />
+                  <CheckCircle2 size={17} className="absolute top-2 right-2" />
                 )}
 
                 <UserRound className="mx-auto mb-2" size={25} />
@@ -109,10 +104,7 @@ const SignUpPage = () => {
                 }`}
               >
                 {role === "vendor" && (
-                  <CheckCircle2
-                    size={17}
-                    className="absolute top-2 right-2"
-                  />
+                  <CheckCircle2 size={17} className="absolute top-2 right-2" />
                 )}
 
                 <Store className="mx-auto mb-2" size={25} />
@@ -180,21 +172,13 @@ const SignUpPage = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-gray-400"
               >
-                {showPassword ? (
-                  <EyeOff size={18} />
-                ) : (
-                  <Eye size={18} />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <label className="flex items-start gap-2 text-xs leading-5 text-gray-500">
-            <input
-              type="checkbox"
-              className="mt-1 accent-[#A65D55]"
-              required
-            />
+            <input type="checkbox" className="mt-1 accent-[#A65D55]" required />
             I agree to the Terms of Service and Privacy Policy.
           </label>
 
@@ -226,7 +210,7 @@ const SignUpPage = () => {
         </p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SignUpPage;
+export default SignUpPage

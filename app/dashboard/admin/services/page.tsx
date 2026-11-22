@@ -30,7 +30,7 @@ import {
   getAdminServices,
   updateServiceStatus,
   deleteAdminService,
-} from "@/lib/actions/admin-services-api";
+} from "@/lib/actions/admin-services-api"
 
 type Service = {
   _id: string

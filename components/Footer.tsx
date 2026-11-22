@@ -1,5 +1,4 @@
-
-import Link from "next/link";
+import Link from "next/link"
 import {
   Heart,
   MapPin,
@@ -7,7 +6,7 @@ import {
   Phone,
   ArrowUpRight,
   Sparkles,
-} from "lucide-react";
+} from "lucide-react"
 
 const Footer = () => {
   const quickLinks = [
@@ -15,14 +14,14 @@ const Footer = () => {
     { label: "Browse Services", href: "/browse-services" },
     { label: "About Us", href: "/about" },
     { label: "Contact Us", href: "/contact" },
-  ];
+  ]
 
   const accountLinks = [
     { label: "Sign In", href: "/signin" },
     { label: "Create Account", href: "/signup" },
     { label: "Customer Dashboard", href: "/dashboard/customer" },
     { label: "Vendor Dashboard", href: "/dashboard/vendor" },
-  ];
+  ]
 
   return (
     <footer className="w-full bg-[#211B1A] text-white">
@@ -40,8 +39,8 @@ const Footer = () => {
 
             <p className="mt-6 max-w-sm text-sm leading-7 text-white/55">
               Every love story deserves a beautiful beginning. Discover trusted
-              wedding professionals and plan your special day effortlessly
-              with WedNest.
+              wedding professionals and plan your special day effortlessly with
+              WedNest.
             </p>
 
             <div className="mt-7 flex gap-3">
@@ -69,7 +68,10 @@ const Footer = () => {
             <ul className="space-y-4">
               {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/55 hover:text-[#D99A8F]">
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/55 hover:text-[#D99A8F]"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -82,7 +84,10 @@ const Footer = () => {
             <ul className="space-y-4">
               {accountLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/55 hover:text-[#D99A8F]">
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/55 hover:text-[#D99A8F]"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -103,12 +108,18 @@ const Footer = () => {
                 <span className="text-sm text-white/60">Dhaka, Bangladesh</span>
               </div>
 
-              <a href="mailto:support@wednest.com" className="flex items-center gap-3 text-sm text-white/60 hover:text-[#D99A8F]">
+              <a
+                href="mailto:support@wednest.com"
+                className="flex items-center gap-3 text-sm text-white/60 hover:text-[#D99A8F]"
+              >
                 <Mail size={17} className="text-[#D99A8F]" />
                 iftekharm.alasif@gmail.com
               </a>
 
-              <a href="tel:+8801000000000" className="flex items-center gap-3 text-sm text-white/60 hover:text-[#D99A8F]">
+              <a
+                href="tel:+8801000000000"
+                className="flex items-center gap-3 text-sm text-white/60 hover:text-[#D99A8F]"
+              >
                 <Phone size={17} className="text-[#D99A8F]" />
                 +880 1763 058003
               </a>
@@ -121,7 +132,7 @@ const Footer = () => {
             <div>
               <div className="mb-3 flex items-center gap-2 text-[#D99A8F]">
                 <Sparkles size={16} />
-                <span className="text-xs font-semibold uppercase tracking-[0.2em]">
+                <span className="text-xs font-semibold tracking-[0.2em] uppercase">
                   Make It Memorable
                 </span>
               </div>
@@ -129,7 +140,8 @@ const Footer = () => {
                 Your dream wedding starts with WedNest.
               </h3>
               <p className="mt-2 text-sm text-white/55">
-                Find the right people, plan every detail, and celebrate your love story.
+                Find the right people, plan every detail, and celebrate your
+                love story.
               </p>
             </div>
 
@@ -155,7 +167,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

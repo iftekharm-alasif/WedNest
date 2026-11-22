@@ -8,8 +8,10 @@ import { authClient } from "@/lib/auth-client"
 const SubscriptioPage = () => {
   const { data: session, isPending } = authClient.useSession()
 
-  const user = session?.user as
-    (typeof session.user & { subscriptionPlan?: string }) | undefined
+const user = session?.user as
+  | { subscriptionPlan?: string }
+  | null
+  | undefined
 
   const plan = user?.subscriptionPlan || "free"
 

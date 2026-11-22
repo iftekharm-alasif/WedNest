@@ -321,20 +321,18 @@ export default function CustomerBookingsPage() {
 
                       {item.status === "pending" && (
                         <AlertDialog>
-
-<AlertDialogTrigger
-  render={
-    <button
-      type="button"
-      disabled={cancelLoading === item._id}
-      className="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-60"
-    >
-      <XCircle size={16} />
-      Cancel Booking
-    </button>
-  }
-/>
-
+                          <AlertDialogTrigger
+                            render={
+                              <button
+                                type="button"
+                                disabled={cancelLoading === item._id}
+                                className="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                              >
+                                <XCircle size={16} />
+                                Cancel Booking
+                              </button>
+                            }
+                          />
 
                           <AlertDialogContent>
                             <AlertDialogHeader>
