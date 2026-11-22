@@ -1,6 +1,8 @@
+
 import { authClient } from "@/lib/auth-client"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
 type ServiceData = {
   serviceName: string
@@ -17,7 +19,10 @@ export const createServices = async (data: ServiceData) => {
     const { data: tokenData } = await authClient.token()
 
     if (!tokenData?.token) {
-      throw new Error("Please login first")
+      return {
+        success: false,
+        message: "Please login first",
+      }
     }
 
     const res = await fetch(`${BASE_URL}/services`, {
@@ -32,13 +37,23 @@ export const createServices = async (data: ServiceData) => {
     const result = await res.json()
 
     if (!res.ok) {
-      throw new Error(result.message || "Failed to create service")
+      return {
+        success: false,
+        message: result.message || "Failed to create service",
+      }
     }
 
     return result
   } catch (error) {
     console.error("Create Service Error:", error)
-    throw error
+
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to create service",
+    }
   }
 }
 
@@ -64,7 +79,6 @@ export const uploadServiceImages = async (files: File[]) => {
 }
 
 // Delete Service
-
 export const deleteService = async (id: string) => {
   try {
     const { data } = await authClient.token()
@@ -355,14 +369,12 @@ export const updateService = async (
   }
 ) => {
   try {
-    // Get JWT token
-    const { data: tokenData, error } = await authClient.token()
+    const { data: tokenData } = await authClient.token()
 
     if (!tokenData?.token) {
       throw new Error("Please login first")
     }
 
-    // Send request with JWT
     const res = await fetch(`${BASE_URL}/services/${id}`, {
       method: "PUT",
       headers: {

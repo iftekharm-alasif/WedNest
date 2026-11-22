@@ -169,8 +169,11 @@ const AddServicePage = () => {
       } else {
         toast.error(result.message || "Failed to submit service")
       }
-    } catch {
-      toast.error("Something went wrong")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to submit service"
+
+      toast.error(message)
     } finally {
       setLoading(false)
       setShowConfirmation(false)

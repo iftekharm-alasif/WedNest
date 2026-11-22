@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { MongoClient } from "mongodb"
+import clientPromise from "@/lib/mongodb"
 import { requireDashboardRole } from "@/lib/dashboard-auth"
 import {
   Card,
@@ -21,7 +21,7 @@ import {
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-const client = new MongoClient(process.env.MONGODB_URI as string)
+const client = await clientPromise
 const db = client.db("wednestdb")
 
 export default async function AdminDashboard() {

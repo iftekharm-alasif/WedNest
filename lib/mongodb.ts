@@ -13,19 +13,15 @@ declare global {
   var mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+const globalWithMongo = globalThis as typeof globalThis & {
+  mongoClientPromise?: Promise<MongoClient>;
+};
 
-if (process.env.NODE_ENV === "development") {
-  if (!global.mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global.mongoClientPromise = client.connect();
-  }
-
-  clientPromise = global.mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+if (!globalWithMongo.mongoClientPromise) {
+  const client = new MongoClient(uri, options);
+  globalWithMongo.mongoClientPromise = client.connect();
 }
+
+const clientPromise = globalWithMongo.mongoClientPromise;
 
 export default clientPromise;

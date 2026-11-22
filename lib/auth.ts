@@ -1,20 +1,11 @@
 import { betterAuth } from "better-auth"
 import { createAuthMiddleware, APIError } from "better-auth/api"
-import { MongoClient, ObjectId } from "mongodb"
+import { ObjectId } from "mongodb"
+import clientPromise from "@/lib/mongodb"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
 import { jwt } from "better-auth/plugins"
 
-declare global {
-  var _mongoClient: MongoClient | undefined
-}
-
-const client =
-  globalThis._mongoClient ?? new MongoClient(process.env.MONGODB_URI as string)
-
-if (!globalThis._mongoClient) {
-  globalThis._mongoClient = client
-}
-
+const client = await clientPromise
 const db = client.db("wednestdb")
 
 export const users = db.collection<{

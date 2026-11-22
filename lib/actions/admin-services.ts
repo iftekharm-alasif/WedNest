@@ -2,13 +2,19 @@
 "use server";
 
 import { headers } from "next/headers";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { auth } from "@/lib/auth";
+import clientPromise from "@/lib/mongodb";
 
-const client = new MongoClient(process.env.MONGODB_URI as string);
-const db = client.db("wednestdb");
-const services = db.collection("services");
-const users = db.collection("user");
+async function getCollections() {
+  const client = await clientPromise;
+  const db = client.db("wednestdb");
+
+  return {
+    services: db.collection("services"),
+    users: db.collection("user"),
+  };
+}
 
 async function checkAdmin() {
   const session = await auth.api.getSession({
@@ -18,6 +24,8 @@ async function checkAdmin() {
   if (!session) {
     throw new Error("Unauthorized");
   }
+
+  const { users } = await getCollections();
 
   const currentUser = await users.findOne(
     { email: session.user.email },
@@ -32,6 +40,8 @@ async function checkAdmin() {
 export async function getAdminServices() {
   try {
     await checkAdmin();
+
+    const { services } = await getCollections();
 
     const data = await services
       .find({})
@@ -75,6 +85,8 @@ export async function updateServiceStatus(
   try {
     await checkAdmin();
 
+    const { services } = await getCollections();
+
     if (!ObjectId.isValid(serviceId)) {
       return { success: false, message: "Invalid service ID" };
     }
@@ -110,5 +122,3 @@ export async function updateServiceStatus(
     };
   }
 }
-
-

@@ -3,16 +3,21 @@
 
 import { headers } from "next/headers";
 import { ObjectId } from "mongodb";
-import { MongoClient } from "mongodb";
 import { auth } from "@/lib/auth";
-
-const client = new MongoClient(process.env.MONGODB_URI as string);
-const db = client.db("wednestdb");
-const users = db.collection("user");
-const sessions = db.collection("session");
-const accounts = db.collection("account");
+import clientPromise from "@/lib/mongodb";
 
 type UserRole = "admin" | "vendor" | "customer";
+
+async function getCollections() {
+  const client = await clientPromise;
+  const db = client.db("wednestdb");
+
+  return {
+    users: db.collection("user"),
+    sessions: db.collection("session"),
+    accounts: db.collection("account"),
+  };
+}
 
 async function checkAdmin() {
   const session = await auth.api.getSession({
@@ -20,6 +25,8 @@ async function checkAdmin() {
   });
 
   if (!session) throw new Error("No active session");
+
+  const { users } = await getCollections();
 
   const currentUser = await users.findOne({
     email: session.user.email,
@@ -35,6 +42,8 @@ async function checkAdmin() {
 export async function getAdminUsers() {
   try {
     await checkAdmin();
+
+    const { users } = await getCollections();
 
     const data = await users
       .find(
@@ -75,6 +84,7 @@ export async function getAdminUsers() {
     };
   } catch (error) {
     console.error("Get users error:", error);
+
     return {
       success: false,
       message: "Failed to load users",
@@ -89,6 +99,7 @@ export async function updateUserRole(
 ) {
   try {
     const session = await checkAdmin();
+    const { users } = await getCollections();
 
     if (!ObjectId.isValid(userId)) {
       return { success: false, message: "Invalid user ID" };
@@ -118,6 +129,7 @@ export async function updateUserRole(
 
     if (target.role === "admin" && newRole !== "admin") {
       const count = await users.countDocuments({ role: "admin" });
+
       if (count <= 1) {
         return {
           success: false,
@@ -134,6 +146,7 @@ export async function updateUserRole(
     return { success: true, message: "User role updated successfully" };
   } catch (error) {
     console.error(error);
+
     return { success: false, message: "Failed to update user role" };
   }
 }
@@ -141,6 +154,7 @@ export async function updateUserRole(
 export async function banUser(userId: string) {
   try {
     const session = await checkAdmin();
+    const { users, sessions } = await getCollections();
 
     if (!ObjectId.isValid(userId)) {
       return { success: false, message: "Invalid user ID" };
@@ -160,6 +174,7 @@ export async function banUser(userId: string) {
 
     if (target.role === "admin") {
       const count = await users.countDocuments({ role: "admin" });
+
       if (count <= 1) {
         return {
           success: false,
@@ -179,12 +194,12 @@ export async function banUser(userId: string) {
       }
     );
 
-    // Revoke all existing sessions
     await sessions.deleteMany({ userId: target._id.toString() });
 
     return { success: true, message: "User banned successfully" };
   } catch (error) {
     console.error("Ban user error:", error);
+
     return { success: false, message: "Failed to ban user" };
   }
 }
@@ -192,6 +207,8 @@ export async function banUser(userId: string) {
 export async function unbanUser(userId: string) {
   try {
     await checkAdmin();
+
+    const { users } = await getCollections();
 
     if (!ObjectId.isValid(userId)) {
       return { success: false, message: "Invalid user ID" };
@@ -212,6 +229,7 @@ export async function unbanUser(userId: string) {
     return { success: true, message: "User unbanned successfully" };
   } catch (error) {
     console.error("Unban user error:", error);
+
     return { success: false, message: "Failed to unban user" };
   }
 }
@@ -219,6 +237,7 @@ export async function unbanUser(userId: string) {
 export async function deleteUser(userId: string) {
   try {
     const session = await checkAdmin();
+    const { users, sessions, accounts } = await getCollections();
 
     if (!ObjectId.isValid(userId)) {
       return { success: false, message: "Invalid user ID" };
@@ -233,11 +252,15 @@ export async function deleteUser(userId: string) {
     }
 
     if (target.email?.toLowerCase() === session.user.email.toLowerCase()) {
-      return { success: false, message: "You cannot delete your own account" };
+      return {
+        success: false,
+        message: "You cannot delete your own account",
+      };
     }
 
     if (target.role === "admin") {
       const count = await users.countDocuments({ role: "admin" });
+
       if (count <= 1) {
         return {
           success: false,
@@ -258,6 +281,7 @@ export async function deleteUser(userId: string) {
     return { success: true, message: "User deleted successfully" };
   } catch (error) {
     console.error("Delete user error:", error);
+
     return { success: false, message: "Failed to delete user" };
   }
 }

@@ -2,14 +2,19 @@
 "use server";
 
 import { headers } from "next/headers";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { auth } from "@/lib/auth";
+import clientPromise from "@/lib/mongodb";
 
-const client = new MongoClient(process.env.MONGODB_URI as string);
-const db = client.db("wednestdb");
+async function getCollections() {
+  const client = await clientPromise;
+  const db = client.db("wednestdb");
 
-const users = db.collection("user");
-const transactions = db.collection("transactions");
+  return {
+    users: db.collection("user"),
+    transactions: db.collection("transactions"),
+  };
+}
 
 async function checkAdmin() {
   const session = await auth.api.getSession({
@@ -19,6 +24,8 @@ async function checkAdmin() {
   if (!session) {
     throw new Error("Unauthorized");
   }
+
+  const { users } = await getCollections();
 
   const currentUser = await users.findOne(
     {
@@ -42,26 +49,28 @@ export async function getAdminTransactions() {
   try {
     await checkAdmin();
 
-const data = await transactions
-  .find(
-    {},
-    {
-      projection: {
-        vendorId: 1,
-        vendorName: 1,
-        vendorEmail: 1,
-        plan: 1,
-        amount: 1,
-        currency: 1,
-        status: 1,
-        stripeSessionId: 1,
-        stripeSubscriptionId: 1,
-        createdAt: 1,
-      },
-    }
-  )
-  .sort({ createdAt: -1 })
-  .toArray();
+    const { users, transactions } = await getCollections();
+
+    const data = await transactions
+      .find(
+        {},
+        {
+          projection: {
+            vendorId: 1,
+            vendorName: 1,
+            vendorEmail: 1,
+            plan: 1,
+            amount: 1,
+            currency: 1,
+            status: 1,
+            stripeSessionId: 1,
+            stripeSubscriptionId: 1,
+            createdAt: 1,
+          },
+        }
+      )
+      .sort({ createdAt: -1 })
+      .toArray();
 
     console.log("Total transaction documents:", data.length);
 

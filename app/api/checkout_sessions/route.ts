@@ -1,15 +1,15 @@
+
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
-import { MongoClient, ObjectId } from "mongodb"
+import { ObjectId } from "mongodb"
 
 import { stripe } from "@/lib/stripe"
 import { auth } from "@/lib/auth"
+import clientPromise from "@/lib/mongodb"
 
 export const runtime = "nodejs"
 
 export async function POST() {
-  const client = new MongoClient(process.env.MONGODB_URI as string)
-
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -40,8 +40,7 @@ export async function POST() {
       )
     }
 
-    await client.connect()
-
+    const client = await clientPromise
     const db = client.db("wednestdb")
 
     const vendor = await db.collection("user").findOne({
@@ -109,7 +108,5 @@ export async function POST() {
       { message: "Unable to create checkout session" },
       { status: 500 }
     )
-  } finally {
-    await client.close()
   }
 }

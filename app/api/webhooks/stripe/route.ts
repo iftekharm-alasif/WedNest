@@ -1,15 +1,12 @@
+
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
-import { MongoClient, ObjectId } from "mongodb"
+import { ObjectId } from "mongodb"
+
 import { stripe } from "@/lib/stripe"
+import clientPromise from "@/lib/mongodb"
 
 export const runtime = "nodejs"
-
-const client = new MongoClient(process.env.MONGODB_URI as string)
-const db = client.db("wednestdb")
-
-const users = db.collection("user")
-const transactions = db.collection("transactions")
 
 function getSubscriptionExpiry(subscription: Stripe.Subscription) {
   const timestamps = subscription.items.data
@@ -41,6 +38,7 @@ export async function POST(request: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     )
+
     console.log("WEBHOOK RECEIVED:", event.type)
   } catch (error) {
     console.error("Stripe signature error:", error)
@@ -52,7 +50,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    await client.connect()
+    const client = await clientPromise
+    const db = client.db("wednestdb")
+
+    const users = db.collection("user")
+    const transactions = db.collection("transactions")
 
     let subscription: Stripe.Subscription
     let vendorId: string | undefined
@@ -139,7 +141,10 @@ export async function POST(request: Request) {
     if (!vendor) {
       console.error("Vendor not found:", vendorId)
 
-      return NextResponse.json({ message: "Vendor not found" }, { status: 500 })
+      return NextResponse.json(
+        { message: "Vendor not found" },
+        { status: 500 }
+      )
     }
 
     const expiryDate = getSubscriptionExpiry(subscription)

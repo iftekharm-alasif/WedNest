@@ -1,6 +1,5 @@
 
 import Link from "next/link";
-import { MongoClient, ObjectId } from "mongodb";
 import {
   BriefcaseBusiness,
   CheckCircle2,
