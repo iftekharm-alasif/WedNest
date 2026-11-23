@@ -87,63 +87,68 @@ export default function ServiceDetailsPage() {
     checkBooking()
   }, [id, session?.user?.id, isPending])
 
-  const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
 
-    if (!session?.user) {
-      toast.error("Please sign in to book this service")
-      return
-    }
+const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
 
-    const userRole = (session.user as typeof session.user & { role?: string })
-      .role
-
-    if (userRole !== "customer") {
-      toast.error("Only customers can book services")
-      return
-    }
-
-    if (!service?.isActive) {
-      toast.error("This service is currently inactive and cannot be booked")
-      return
-    }
-
-    if (session.user.id === service.vendorId) {
-      toast.error("You cannot book your own service")
-      return
-    }
-
-    if (!eventDate || !eventLocation.trim() || !customerPhone.trim()) {
-      toast.error("Please fill in the required fields")
-      return
-    }
-
-    try {
-      setBookingLoading(true)
-
-      const result = await createBooking({
-        serviceId: service._id,
-        customerPhone,
-        eventDate,
-        eventLocation,
-        message,
-      })
-
-      if (!result.success) {
-        toast.error(result.message || "Booking request failed")
-        setBookingLoading(false)
-        return
-      }
-
-      toast.success("Booking request sent successfully!")
-
-      window.location.reload()
-    } catch (error) {
-      console.log(error)
-      toast.error("Failed to send booking request")
-      setBookingLoading(false)
-    }
+  if (!session?.user) {
+    toast.error("Please sign in to book this service")
+    return
   }
+
+  const userRole = (session.user as typeof session.user & { role?: string })
+    .role
+
+  if (userRole !== "customer") {
+    toast.error("Only customers can book services")
+    return
+  }
+
+  if (!service?.isActive) {
+    toast.error("This service is currently inactive")
+    return
+  }
+
+  if (session.user.id === service.vendorId) {
+    toast.error("You cannot book your own service")
+    return
+  }
+
+  if (!eventDate || !eventLocation.trim() || !customerPhone.trim()) {
+    toast.error("Please fill in the required fields")
+    return
+  }
+
+  try {
+    setBookingLoading(true)
+
+    const result = await createBooking({
+      serviceId: service._id,
+      customerPhone,
+      eventDate,
+      eventLocation,
+      message,
+    })
+
+    if (!result.success) {
+      toast.error(result.message || "Booking request failed")
+      return
+    }
+
+    // Get the newly created booking
+    const booking = await getCustomerBooking(id)
+
+    setExistingBooking(booking)
+
+    toast.success("Booking request sent successfully!")
+  } catch (error) {
+    console.error("Booking Error:", error)
+    toast.error("Failed to send booking request")
+  } finally {
+    setBookingLoading(false)
+  }
+}
+
 
   if (loading || isPending) {
     return (

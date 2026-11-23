@@ -56,18 +56,27 @@ export default function AdminServicesPage() {
   const [filter, setFilter] = useState<FilterType>("all")
   const [updatingId, setUpdatingId] = useState("")
 
-  const loadServices = async () => {
-    setLoading(true)
-
-    const result = await getAdminServices()
-
-    if (result.success) {
-      setServices(result.services as Service[])
-    } else {
-      toast.error(result.message)
+  const loadServices = async (showLoader = true) => {
+    if (showLoader) {
+      setLoading(true)
     }
 
-    setLoading(false)
+    try {
+      const result = await getAdminServices()
+
+      if (result.success) {
+        setServices(result.services as Service[])
+      } else {
+        toast.error(result.message)
+      }
+    } catch (error) {
+      console.error("Load services error:", error)
+      toast.error("Failed to load services")
+    } finally {
+      if (showLoader) {
+        setLoading(false)
+      }
+    }
   }
 
   useEffect(() => {
@@ -124,16 +133,27 @@ export default function AdminServicesPage() {
   ) => {
     setUpdatingId(serviceId)
 
-    const result = await updateServiceStatus(serviceId, status)
+    try {
+      const result = await updateServiceStatus(serviceId, status)
 
-    if (result.success) {
-      toast.success(result.message)
-      await loadServices()
-    } else {
-      toast.error(result.message)
+      if (result.success) {
+        toast.success(result.message)
+
+        // Update only the selected service
+        setServices((prev) =>
+          prev.map((service) =>
+            service._id === serviceId ? { ...service, status } : service
+          )
+        )
+      } else {
+        toast.error(result.message)
+      }
+    } catch (error) {
+      console.error("Update service status error:", error)
+      toast.error("Failed to update service status")
+    } finally {
+      setUpdatingId("")
     }
-
-    setUpdatingId("")
   }
 
   const handleDelete = async () => {
@@ -202,7 +222,7 @@ export default function AdminServicesPage() {
         </div>
 
         <button
-          onClick={loadServices}
+          onClick= { () => loadServices()}
           disabled={loading}
           className="flex items-center justify-center gap-2 rounded-xl border border-[#F0E5E1] bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-[#FFF8F6] disabled:opacity-60"
         >

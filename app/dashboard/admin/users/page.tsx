@@ -89,15 +89,33 @@ export default function AdminUsersPage() {
   }, [])
 
   const handleBanToggle = async (user: User) => {
-    const result = user.isBanned
-      ? await unbanUser(user._id)
-      : await banUser(user._id)
+    setUpdatingId(user._id)
 
-    if (result.success) {
-      toast.success(result.message)
-      await loadUsers()
-    } else {
-      toast.error(result.message)
+    try {
+      const result = user.isBanned
+        ? await unbanUser(user._id)
+        : await banUser(user._id)
+
+      if (result.success) {
+        toast.success(result.message)
+
+        setUsers((prev) =>
+          prev.map((item) =>
+            item._id === user._id
+              ? {
+                  ...item,
+                  isBanned: !user.isBanned,
+                }
+              : item
+          )
+        )
+      } else {
+        toast.error(result.message)
+      }
+    } catch {
+      toast.error("Failed to update account status")
+    } finally {
+      setUpdatingId("")
     }
   }
 
@@ -141,18 +159,31 @@ export default function AdminUsersPage() {
   const customerCount = users.filter((user) => user.role === "customer").length
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    const previousUser = users.find((user) => user._id === userId)
+
+    if (!previousUser || previousUser.role === newRole) return
+
     setUpdatingId(userId)
 
-    const result = await updateUserRole(userId, newRole)
+    try {
+      const result = await updateUserRole(userId, newRole)
 
-    if (result.success) {
-      toast.success(result.message)
-      await loadUsers()
-    } else {
-      toast.error(result.message)
+      if (result.success) {
+        toast.success(result.message)
+
+        setUsers((prev) =>
+          prev.map((user) =>
+            user._id === userId ? { ...user, role: newRole } : user
+          )
+        )
+      } else {
+        toast.error(result.message)
+      }
+    } catch {
+      toast.error("Failed to update user role")
+    } finally {
+      setUpdatingId("")
     }
-
-    setUpdatingId("")
   }
 
   const getInitials = (name: string) => {
@@ -461,13 +492,18 @@ export default function AdminUsersPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleBanToggle(user)}
-                          className={`rounded-lg px-3 py-2 text-xs font-semibold ${
+                          disabled={updatingId === user._id}
+                          className={`rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 ${
                             user.isBanned
                               ? "bg-green-50 text-green-700 hover:bg-green-100"
                               : "bg-orange-50 text-orange-700 hover:bg-orange-100"
                           }`}
                         >
-                          {user.isBanned ? "Unban" : "Ban"}
+                          {updatingId === user._id
+                            ? "Updating..."
+                            : user.isBanned
+                              ? "Unban"
+                              : "Ban"}
                         </button>
 
                         <button
